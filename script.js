@@ -2035,3 +2035,230 @@ if (!window.toggleFAQ) {
     initUIHub();
   }
 })();
+
+// === HUB APP MODE (data-added-by="hub-appmode-v1") ===
+(function(){
+  const HUB_ATTR = 'hub-appmode-v1';
+  const added = new Set();
+  const listeners = [];
+  const observers = [];
+  const movedNodes = []; // {node, originalParent, nextSibling}
+  let initialized = false;
+
+  function mark(node){ if(node && node.setAttribute){ node.setAttribute('data-added-by', HUB_ATTR); added.add(node);} }
+  function on(target, ev, fn, opts){ if(target && target.addEventListener){ target.addEventListener(ev, fn, opts); listeners.push({target, ev, fn, opts}); } }
+  function observe(o){ if(o && typeof o.disconnect==='function'){ observers.push(o);} }
+  function dispatch(name, detail){ try{ window.dispatchEvent(new CustomEvent(name, { detail })); }catch(_){} }
+
+  function qs(s, scope){ return (scope||document).querySelector(s); }
+  function qsa(s, scope){ return Array.from((scope||document).querySelectorAll(s)); }
+
+  function createEl(tag, props = {}, children = []){
+    const el = document.createElement(tag);
+    Object.entries(props).forEach(([k,v])=>{
+      if(/^aria[A-Z]/.test(k)) { const attr = k.replace(/^aria/, 'aria-').replace(/[A-Z]/g, m=>'-'+m.toLowerCase()); el.setAttribute(attr, v); return; }
+      if(k === 'class') el.className = v; else if(k in el) el[k]=v; else el.setAttribute(k, v);
+    });
+    children.forEach(c => el.appendChild(c));
+    mark(el);
+    return el;
+  }
+
+  function moveNode(node, newParent, beforeSibling = null){
+    if(!node || !newParent) return;
+    movedNodes.push({ node, originalParent: node.parentNode, nextSibling: node.nextSibling });
+    if(beforeSibling) newParent.insertBefore(node, beforeSibling); else newParent.appendChild(node);
+  }
+
+  function restoreMoved(){
+    for(let i=movedNodes.length-1;i>=0;i--){
+      const {node, originalParent, nextSibling} = movedNodes[i];
+      try{ originalParent.insertBefore(node, nextSibling); }catch(_){}
+    }
+    movedNodes.length = 0;
+  }
+
+  function buildShell(){
+    if(qs('#hub-app-shell')) return qs('#hub-app-shell');
+    const shell = createEl('div', { id:'hub-app-shell' });
+
+    const topbar = createEl('div', { id:'hub-topbar', class:'hub-topbar', role:'navigation', ariaLabel:'Top bar' });
+    const left = createEl('div', { class:'hub-topbar-left' });
+    const brand = qs('.nav-brand') || qs('header .nav-brand');
+    if(brand){
+      const clone = brand.cloneNode(true);
+      mark(clone);
+      left.appendChild(clone);
+    } else {
+      const fallback = createEl('div', { class:'hub-topbar-title', role:'img', ariaLabel:'App' });
+      fallback.textContent = '';
+      left.appendChild(fallback);
+    }
+    const actionSrc = qs('.hero-cta button, .cta-buttons .btn-primary');
+    const primaryAction = createEl('button', { class:'hub-topbar-action hub-ripple', type:'button', ariaLabel:'Ação principal' });
+    primaryAction.innerHTML = '<i class="fas fa-rocket" aria-hidden="true"></i>';
+    if(actionSrc){ on(primaryAction, 'click', ()=>{ try{ actionSrc.dispatchEvent(new MouseEvent('click', {bubbles:true})); }catch(_){ try{ actionSrc.click(); }catch(__){} } dispatch('hub:cta-click', { context:'topbar' }); }); }
+    topbar.appendChild(left); topbar.appendChild(primaryAction);
+
+    const portal = createEl('div', { id:'hub-portal', class:'hub-portal hub-app-padding-top hub-app-padding-bottom', role:'region', ariaLabel:'Conteúdo principal' });
+
+    shell.appendChild(topbar);
+    shell.appendChild(portal);
+
+    document.body.appendChild(shell);
+
+    // Bottom nav (mobile only)
+    if(!qs('#hub-bottomnav')){
+      const bottomnav = createEl('nav', { id:'hub-bottomnav', class:'hub-bottomnav', role:'tablist', ariaLabel:'Navegação inferior' });
+      const tabs = [
+        { id:'hero', icon:'fa-home', label:'Início' },
+        { id:'planos', icon:'fa-layer-group', label:'Planos' },
+        { id:'prova', icon:'fa-badge-check', label:'Resultados' },
+        { id:'contato', icon:'fa-phone', label:'Contato' }
+      ];
+      tabs.forEach((t, idx)=>{
+        const btn = createEl('button', { class:'hub-tab-btn' + (idx===0?' hub-active':''), type:'button', role:'tab', ariaControls:t.id, ariaSelected: idx===0?'true':'false' });
+        btn.innerHTML = `<i class="fas ${t.icon} hub-tab-icon" aria-hidden="true"></i><span class="hub-tab-label">${t.label}</span>`;
+        on(btn, 'click', ()=>{
+          const target = qs(`#${t.id}`) || qs(`section.${t.id}`) || qs(`[data-hub-anchor="${t.id}"]`);
+          if(target){ target.scrollIntoView({ behavior:'smooth' }); dispatch('hub:navigate', { section: t.id }); }
+          qsa('#hub-bottomnav .hub-tab-btn').forEach(b=>{ const active = b===btn; b.classList.toggle('hub-active', active); b.setAttribute('aria-selected', active?'true':'false'); });
+        });
+        bottomnav.appendChild(btn);
+      });
+      document.body.appendChild(bottomnav);
+    }
+
+    return shell;
+  }
+
+  function portalizeContent(){
+    const portal = qs('#hub-portal');
+    if(!portal) return;
+    const order = ['hero','dor','causa','solucao','prova','planos','faq'];
+    order.forEach(id => {
+      const el = qs(`#${id}`) || qs(`section.${id}`) || qs(`[data-hub-anchor="${id}"]`);
+      if(el){ moveNode(el, portal); }
+    });
+  }
+
+  // Bottom sheet for micro-info
+  function ensureBottomSheet(){
+    if(qs('#hub-bottom-sheet')) return qs('#hub-bottom-sheet');
+    const sheetWrap = createEl('div', { id:'hub-bottom-sheet', role:'dialog', ariaModal:'true', ariaHidden:'true' });
+    const sheet = createEl('div', { class:'hub-sheet' });
+    const header = createEl('div', { class:'hub-sheet-header' });
+    const title = createEl('div', { class:'hub-sheet-title' });
+    const close = createEl('button', { class:'hub-sheet-close hub-ripple', type:'button', ariaLabel:'Fechar' });
+    close.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+    const body = createEl('div', { class:'hub-sheet-body' });
+    header.appendChild(title); header.appendChild(close);
+    sheet.appendChild(header); sheet.appendChild(body);
+    sheetWrap.appendChild(sheet);
+    document.body.appendChild(sheetWrap);
+
+    // close handlers
+    function hide(){ sheetWrap.classList.remove('hub-open'); sheetWrap.setAttribute('aria-hidden','true'); }
+    on(close, 'click', hide);
+    on(sheetWrap, 'click', (e)=>{ if(e.target === sheetWrap) hide(); });
+    on(document, 'keydown', (e)=>{ if(e.key==='Escape'){ hide(); } });
+
+    // gestures (swipe down)
+    let startY = null; let currentY = null;
+    on(sheetWrap, 'touchstart', (e)=>{ startY = e.touches[0].clientY; currentY = startY; });
+    on(sheetWrap, 'touchmove', (e)=>{ currentY = e.touches[0].clientY; });
+    on(sheetWrap, 'touchend', ()=>{ if(startY !== null && currentY !== null && (currentY - startY) > 80){ sheetWrap.classList.remove('hub-open'); sheetWrap.setAttribute('aria-hidden','true'); } startY = currentY = null; });
+
+    return sheetWrap;
+  }
+
+  function showInfoSheet(titleText, contentNode){
+    const sheetWrap = ensureBottomSheet();
+    const title = qs('.hub-sheet-title', sheetWrap);
+    const body = qs('.hub-sheet-body', sheetWrap);
+    title.textContent = titleText || '';
+    body.innerHTML = '';
+    if(contentNode){ body.appendChild(contentNode.cloneNode(true)); }
+    sheetWrap.classList.add('hub-open');
+    sheetWrap.setAttribute('aria-hidden','false');
+  }
+
+  function wireInfoTriggers(){
+    // Use explicações existentes sem criar texto novo
+    qsa('.plano-beneficios li, .beneficios li, .features li').forEach(li => {
+      if(li.getAttribute('data-hub-info-wired')==='1') return;
+      li.setAttribute('data-hub-info-wired','1');
+      on(li, 'click', ()=>{
+        const explain = qs('small, .explain', li);
+        const title = (qs('h3,h4', li) || li).textContent.trim();
+        const content = explain || li.cloneNode(true);
+        showInfoSheet(title, content);
+      });
+    });
+  }
+
+  function respectReducedMotion(){
+    const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    if(mq && mq.matches){
+      const sheet = qs('#hub-bottom-sheet .hub-sheet');
+      if(sheet) sheet.style.transition = 'none';
+    }
+  }
+
+  function initHubAppMode(){
+    if(initialized) return; initialized = true;
+    // Build shell and portalize
+    const shell = buildShell();
+    portalizeContent();
+    // Desktop centering helper
+    document.body.classList.add('hub-app-desktop-center');
+    mark(shell);
+
+    // Accessibility aria-live region
+    if(!qs('#hub-aria-live')){
+      const live = createEl('div', { id:'hub-aria-live', role:'status', ariaLive:'polite', style:'position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;' });
+      document.body.appendChild(live);
+    }
+
+    wireInfoTriggers();
+    respectReducedMotion();
+    dispatch('hub:initialized', {});
+  }
+
+  function lazyInitialize(){
+    const hero = qs('#hero') || qs('.hero');
+    if(!hero){ initHubAppMode(); return; }
+    if('IntersectionObserver' in window){
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting){ initHubAppMode(); io.disconnect(); } });
+      }, { threshold: 0.25 });
+      io.observe(hero); observe(io);
+    } else {
+      initHubAppMode();
+    }
+  }
+
+  window.initHubAppMode = initHubAppMode;
+  window.removeHubAppMode = function(){
+    // remove created nodes
+    Array.from(added).forEach(n => { try{ n.remove(); }catch(_){} });
+    added.clear();
+    // restore moved content
+    restoreMoved();
+    // remove listeners
+    listeners.forEach(({target, ev, fn, opts})=>{ try{ target.removeEventListener(ev, fn, opts); }catch(_){} });
+    listeners.length = 0;
+    // disconnect observers
+    observers.forEach(o => { try{ o.disconnect(); }catch(_){} });
+    observers.length = 0;
+    // remove helper classes
+    document.body.classList.remove('hub-app-desktop-center');
+    initialized = false;
+  };
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', lazyInitialize, { once: true });
+  } else {
+    lazyInitialize();
+  }
+})();

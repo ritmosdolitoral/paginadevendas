@@ -1623,3 +1623,415 @@ if (!window.toggleFAQ) {
         faqItem.classList.toggle('active');
     };
 }
+
+// === UI HUB (data-added-by="ui-hub-v1") ===
+(function(){
+  const HUB_ATTR = 'ui-hub-v1';
+  const ADDED_SELECTOR = `[data-added-by="${HUB_ATTR}"]`;
+  const state = {
+    addedNodes: new Set(),
+    listeners: [],
+    observers: [],
+    initialized: false
+  };
+
+  function addNode(node){ if(node && node.setAttribute){ node.setAttribute('data-added-by', HUB_ATTR); state.addedNodes.add(node);} }
+  function on(target, event, handler, opts){ if(target && target.addEventListener){ target.addEventListener(event, handler, opts); state.listeners.push({target, event, handler, opts}); } }
+  function observe(observer){ if(observer && typeof observer.disconnect === 'function'){ state.observers.push(observer);} }
+
+  function dispatch(name, detail){ try { window.dispatchEvent(new CustomEvent(name, { detail })); } catch(_){} }
+
+  function qs(sel, scope){ return (scope||document).querySelector(sel); }
+  function qsa(sel, scope){ return Array.from((scope||document).querySelectorAll(sel)); }
+
+  function createEl(tag, props = {}, children = []){
+    const el = document.createElement(tag);
+    Object.entries(props).forEach(([k,v])=>{
+      // normalize aria* -> aria-*
+      if(/^aria[A-Z]/.test(k)) {
+        const attr = k.replace(/^aria/, 'aria-').replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+        el.setAttribute(attr, v);
+        return;
+      }
+      if(k === 'class') el.className = v;
+      else if(k === 'dataset') Object.entries(v).forEach(([dk,dv])=> el.dataset[dk]=dv);
+      else if(k in el) el[k] = v; else el.setAttribute(k, v);
+    });
+    children.forEach(c => el.appendChild(c));
+    addNode(el);
+    return el;
+  }
+
+  function normalizeText(str){ return (str||'').replace(/\s+/g,' ').trim(); }
+
+  // 1) Floating CTA
+  function createFloatingCTA(){
+    if(qs('#hub-floating-cta')) return;
+    const heroCTA = qs('.hero .cta') || qs('.hero-cta') || qs('#hero .cta') || qs('header .cta');
+    const originals = heroCTA ? qsa('a, button', heroCTA).slice(0,2) : [];
+
+    const container = createEl('div', {
+      id: 'hub-floating-cta',
+      class: 'hub-floating-cta',
+      role: 'region',
+      ariaLabel: 'Barra de ações rápidas',
+      tabIndex: 0
+    });
+
+    const createProxyBtn = (original, idx) => {
+      const label = normalizeText(original ? original.textContent : (idx === 0 ? 'Quero avançar' : 'Ver mais'));
+      const btn = createEl('button', {
+        class: 'hub-cta-btn ' + (idx === 0 ? 'primary' : 'secondary'),
+        type: 'button',
+        ariaLabel: label
+      });
+      btn.textContent = label;
+      on(btn, 'click', (e) => {
+        dispatch('hub:cta-click', { source: 'floating', index: idx });
+        if(original){
+          try { original.dispatchEvent(new MouseEvent('click', { bubbles:true })); } catch(_){ try{ original.click(); }catch(__){} }
+        }
+      });
+      return btn;
+    };
+
+    if(originals.length){
+      originals.forEach((el, i) => container.appendChild(createProxyBtn(el, i)));
+    } else {
+      container.appendChild(createProxyBtn(null, 0));
+      container.appendChild(createProxyBtn(null, 1));
+    }
+
+    document.body.appendChild(container);
+
+    // hide when footer visible
+    const footer = qs('footer, .footer');
+    if('IntersectionObserver' in window && footer){
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(entry => {
+          if(entry.isIntersecting){ container.classList.add('hub-hidden'); } else { container.classList.remove('hub-hidden'); }
+        });
+      }, { threshold: 0 });
+      io.observe(footer); observe(io);
+    }
+  }
+
+  // 2) Scrollspy + Segment control
+  function detectSections(){
+    const candidates = [
+      { id:'hero', label:'Início' },
+      { id:'dor', label:'Problema' },
+      { id:'causa', label:'Causa' },
+      { id:'solucao', label:'Solução' },
+      { id:'prova', label:'Resultados' },
+      { id:'planos', label:'Planos' },
+      { id:'contato', label:'Contato' }
+    ];
+    const sections = [];
+    candidates.forEach(c => {
+      const el = qs(`#${c.id}`) || qs(`section.${c.id}`);
+      if(el) sections.push({ id: c.id, label: c.label, el });
+    });
+    return sections;
+  }
+
+  function createScrollNav(sections){
+    if(qs('.existing-scrollspy') || qs('#hub-scrollspy')) return;
+    if(!sections.length) return;
+
+    // Desktop sidebar
+    const nav = createEl('nav', { id: 'hub-scrollspy', class: 'hub-scrollspy', role: 'navigation', ariaLabel: 'Navegação rápida' });
+    sections.forEach(s => {
+      const a = createEl('a', { href: `#${s.id}`, class: 'hub-link', role: 'link' });
+      a.textContent = s.label;
+      on(a, 'click', (e)=>{
+        e.preventDefault();
+        const target = s.el;
+        if(target){ target.scrollIntoView({ behavior:'smooth', block:'start' }); }
+        dispatch('hub:navigate', { section: s.id });
+      });
+      nav.appendChild(a);
+    });
+    document.body.appendChild(nav);
+
+    // Mobile segment control
+    if(!qs('#hub-segment-control')){
+      const seg = createEl('div', { id:'hub-segment-control', class:'hub-segment-control', role:'tablist', ariaLabel:'Seções' });
+      sections.forEach((s,idx)=>{
+        const b = createEl('button', { class:'hub-segment-btn' + (idx===0?' hub-active':''), type:'button', role:'tab', ariaControls:s.id, ariaSelected: idx===0?'true':'false' });
+        b.textContent = s.label;
+        on(b, 'click', ()=>{
+          const target = s.el; if(target){ target.scrollIntoView({ behavior:'smooth', block:'start' }); }
+          dispatch('hub:navigate', { section: s.id });
+        });
+        seg.appendChild(b);
+      });
+      const main = qs('main') || document.body;
+      main.insertBefore(seg, main.firstChild);
+    }
+
+    // IntersectionObserver to highlight
+    if('IntersectionObserver' in window){
+      const links = qsa('#hub-scrollspy a');
+      const segBtns = qsa('#hub-segment-control .hub-segment-btn');
+      const map = new Map(sections.map((s, i)=>[s.el, { id:s.id, idx:i }]));
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          const d = map.get(entry.target);
+          if(!d) return;
+          if(entry.intersectionRatio >= 0.35){
+            links.forEach(l => l.classList.toggle('hub-active', l.getAttribute('href') === `#${d.id}`));
+            segBtns.forEach((b, i)=>{
+              const active = i === d.idx; b.classList.toggle('hub-active', active); b.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+          }
+        });
+      }, { threshold: [0, 0.35, 1] });
+      sections.forEach(s => io.observe(s.el));
+      observe(io);
+    }
+  }
+
+  // 3) Progressive disclosure (mobile accordions)
+  function setupAccordions(){
+    const isMobile = window.innerWidth <= 760;
+    const secs = qsa('main section');
+    secs.forEach(sec => {
+      if(qs('.hub-collapse-content', sec)) return; // already processed
+      const header = qs('.section-header', sec);
+      // collect direct content blocks ignoring header
+      const directBlocks = Array.from(sec.children).filter(ch => ch.nodeType === 1 && !ch.classList.contains('section-header'));
+      if(directBlocks.length <= 3) return;
+
+      const wrapper = createEl('div', { class:'hub-collapse-content', id: `hub-col-${sec.id||Math.random().toString(36).slice(2)}` });
+      directBlocks.forEach(ch => wrapper.appendChild(ch));
+      sec.appendChild(wrapper);
+
+      let toggleLabel = 'Mostrar conteúdo';
+      if(header){
+        const hClone = header.cloneNode(true);
+        toggleLabel = normalizeText(hClone.textContent) || toggleLabel;
+      }
+      const toggle = createEl('button', { class:'hub-accordion-toggle', role:'button', ariaExpanded: isMobile ? 'false' : 'true', ariaControls: wrapper.id, type:'button' });
+      toggle.innerHTML = `<span>${toggleLabel}</span><i class="fas fa-chevron-down hub-chevron" aria-hidden="true"></i>`;
+      sec.insertBefore(toggle, wrapper);
+
+      function applyState(){
+        if(window.innerWidth <= 760){
+          const expanded = toggle.getAttribute('aria-expanded') === 'true';
+          if(expanded){ wrapper.style.maxHeight = wrapper.scrollHeight + 'px'; }
+          else { wrapper.style.maxHeight = '0px'; }
+        } else {
+          toggle.setAttribute('aria-expanded', 'true');
+          wrapper.style.maxHeight = 'none';
+        }
+      }
+
+      on(toggle, 'click', ()=>{
+        const cur = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', (!cur).toString());
+        applyState();
+      });
+
+      on(window, 'resize', ()=>{ applyState(); });
+      // initial
+      applyState();
+    });
+  }
+
+  // 4) Toggle Cards/Comparar na seção Planos
+  function setupPlanCompare(){
+    const planos = qs('#planos') || qs('.planos') || qs('.pricing');
+    if(!planos) return;
+    const grid = qs('.planos-grid, .pricing-grid', planos) || qs('.planos-grid') || qs('.pricing-grid');
+    if(!grid) return;
+
+    if(qs('#hub-plan-compare')) return;
+
+    const ctrl = createEl('div', { id:'hub-plan-compare' });
+    const btnCards = createEl('button', { class:'hub-toggle-btn hub-active', type:'button' }); btnCards.textContent = 'Ver em cards';
+    const btnCompare = createEl('button', { class:'hub-toggle-btn', type:'button' }); btnCompare.textContent = 'Comparar planos';
+    ctrl.appendChild(btnCards); ctrl.appendChild(btnCompare);
+
+    grid.parentNode.insertBefore(ctrl, grid);
+
+    let tableWrapper = null;
+
+    function extractPlans(){
+      const cards = qsa('.plano-card, .plan-card', grid);
+      return cards.map(card => {
+        const titleEl = qs('h2, h3', card);
+        const priceEl = qs('.preco-valor, .preco, .price, .valor', card);
+        const list = qs('.plano-beneficios, .beneficios, .features', card);
+        const benefits = list ? qsa('li', list).map(li => normalizeText(li.textContent)) : [];
+        const title = normalizeText(titleEl ? titleEl.textContent : 'Plano');
+        const price = normalizeText(priceEl ? priceEl.textContent : '');
+        return { card, title, price, benefits };
+      });
+    }
+
+    function buildTable(){
+      const plans = extractPlans();
+      const benefitSet = new Set();
+      plans.forEach(p => p.benefits.forEach(b => { if(b) benefitSet.add(b); }));
+      const benefits = Array.from(benefitSet);
+
+      const wrapper = createEl('div', { class:'hub-compare-table-wrapper' });
+      const table = createEl('table', { class:'hub-compare-table', role:'table' });
+      const thead = createEl('thead');
+      const thr = createEl('tr');
+      thr.appendChild(createEl('th', {}, [document.createTextNode('Benefício')]));
+      plans.forEach(p => {
+        const th = createEl('th');
+        th.innerHTML = `${p.title}${p.price ? `<br><small>${p.price}</small>`:''}`;
+        thr.appendChild(th);
+      });
+      thead.appendChild(thr);
+
+      const tbody = createEl('tbody');
+      benefits.forEach(b => {
+        const tr = createEl('tr');
+        tr.appendChild(createEl('th', {}, [document.createTextNode(b)]));
+        plans.forEach(p => {
+          const td = createEl('td');
+          if(p.benefits.some(x => x === b)){
+            td.innerHTML = '<span class="hub-check">✓</span>';
+          } else {
+            td.textContent = '';
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(thead); table.appendChild(tbody);
+      wrapper.appendChild(table);
+      return wrapper;
+    }
+
+    function showCards(){
+      btnCards.classList.add('hub-active');
+      btnCompare.classList.remove('hub-active');
+      grid.style.display = '';
+      if(tableWrapper){ tableWrapper.remove(); tableWrapper = null; }
+    }
+
+    function showCompare(){
+      btnCards.classList.remove('hub-active');
+      btnCompare.classList.add('hub-active');
+      grid.style.display = 'none';
+      if(!tableWrapper){ tableWrapper = buildTable(); grid.parentNode.insertBefore(tableWrapper, grid.nextSibling); }
+      dispatch('hub:compare-open', {});
+    }
+
+    on(btnCards, 'click', showCards);
+    on(btnCompare, 'click', showCompare);
+  }
+
+  // 5) Micro-FAQ inline e micro-ações
+  function setupTooltipsAndCTAs(){
+    // Info icons near benefits and prices
+    const targets = [];
+    qsa('.plano-beneficios li, .beneficios li, .features li').forEach(li => targets.push(li));
+    qsa('.preco-valor, .preco, .price, .valor').forEach(p => targets.push(p));
+    qsa('.hero-cta button, .cta-buttons button').forEach(b => targets.push(b));
+
+    function findExplainer(el){
+      // prefer nearby small or .explain
+      const nearSmall = el.closest('li') ? qs('small, .explain', el.closest('li')) : null;
+      if(nearSmall) return normalizeText(nearSmall.textContent);
+      const sibling = el.nextElementSibling && (el.nextElementSibling.matches('small, .explain') ? el.nextElementSibling : null);
+      if(sibling) return normalizeText(sibling.textContent);
+      return 'Mais detalhes sobre este item';
+    }
+
+    function createTooltip(text, anchor){
+      const tip = createEl('div', { class:'hub-tooltip', role:'dialog', tabIndex: -1 });
+      tip.textContent = text;
+      document.body.appendChild(tip);
+      // position near anchor
+      const rect = anchor.getBoundingClientRect();
+      const top = window.scrollY + rect.top - 8 - 12; // arrow height offset
+      const left = window.scrollX + rect.left;
+      tip.style.top = `${top}px`;
+      tip.style.left = `${left}px`;
+
+      const remove = ()=>{ try{ tip.remove(); }catch(_){} on(document, 'keydown', noop); on(document, 'click', noop); };
+      const esc = (e)=>{ if(e.key === 'Escape'){ e.stopPropagation(); cleanup(); } };
+      const outside = (e)=>{ if(!tip.contains(e.target)){ cleanup(); } };
+      function cleanup(){ document.removeEventListener('keydown', esc, true); document.removeEventListener('click', outside, true); try{ tip.remove(); }catch(_){} }
+      document.addEventListener('keydown', esc, true);
+      document.addEventListener('click', outside, true);
+      return tip;
+    }
+
+    function noop(){}
+
+    targets.forEach(t => {
+      if(qs('.hub-info-btn', t.parentElement)) return;
+      const info = createEl('button', { class:'hub-info-btn', type:'button', ariaLabel:'Mais informações' });
+      info.textContent = 'i';
+      on(info, 'click', (e)=>{
+        e.stopPropagation();
+        const tip = createTooltip(findExplainer(t), info);
+        tip.focus();
+      });
+      if(t.nextSibling){ t.parentElement.insertBefore(info, t.nextSibling); } else { t.parentElement.appendChild(info); }
+    });
+
+    // Micro-CTA inline nos benefícios e final dos planos
+    qsa('.plano-card').forEach(card => {
+      const titleEl = qs('h2, h3', card);
+      const title = normalizeText(titleEl ? titleEl.textContent : 'plano');
+      const ctx = title.toLowerCase().replace(/[^a-z0-9]+/g,'_') || 'plano';
+      // after list
+      const list = qs('.plano-beneficios, .beneficios, .features', card);
+      if(list && !qs('.hub-cta-inline', list.parentElement)){
+        const cta = createEl('button', { class:'hub-cta-inline', type:'button', ariaLabel:`Falar no WhatsApp sobre ${title}` });
+        cta.innerHTML = '<i class="fab fa-whatsapp" aria-hidden="true"></i> Falar no WhatsApp';
+        on(cta, 'click', ()=>{
+          if(typeof window.openWhatsAppFlow === 'function') { window.openWhatsAppFlow(ctx); }
+          else { dispatch('hub:request-whatsapp', { context: ctx }); }
+        });
+        list.parentElement.appendChild(cta);
+      }
+    });
+  }
+
+  function initUIHub(){
+    if(state.initialized) return; state.initialized = true;
+    // defensive checks
+    if(!document || !document.body) return;
+
+    try {
+      createFloatingCTA();
+      const sections = detectSections();
+      createScrollNav(sections);
+      setupAccordions();
+      setupPlanCompare();
+      setupTooltipsAndCTAs();
+    } catch(err){
+      console.error('UI Hub init error', err);
+    }
+  }
+
+  window.initUIHub = initUIHub;
+  window.removeUIHub = function(){
+    // remove added nodes
+    Array.from(state.addedNodes).forEach(n => { try{ n.remove(); }catch(_){} });
+    state.addedNodes.clear();
+    // remove listeners
+    state.listeners.forEach(({target,event,handler,opts})=>{ try{ target.removeEventListener(event, handler, opts); }catch(_){} });
+    state.listeners = [];
+    // disconnect observers
+    state.observers.forEach(o => { try{ o.disconnect(); }catch(_){} });
+    state.observers = [];
+    state.initialized = false;
+  };
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initUIHub, { once: true });
+  } else {
+    initUIHub();
+  }
+})();

@@ -16,9 +16,7 @@
     <div class="app-shell">
       <!-- Topbar -->
       <header class="app-topbar" role="banner">
-        <button class="btn btn--secondary" aria-label="Voltar" id="nav-back" title="Voltar">
-          ◀
-        </button>
+        <button class="btn btn--secondary" aria-label="Voltar" id="nav-back" title="Voltar">◀</button>
         <div class="app-brand">Marca</div>
         <div class="app-top-actions">
           <form role="search" aria-label="Buscar no site" onsubmit="return false">
@@ -31,14 +29,16 @@
         </div>
       </header>
 
-      <!-- Sidebar (desktop) -->
+      <!-- Sidebar (vertical fixa) -->
       <aside class="app-sidebar" aria-label="Navegação principal">
         <nav>
           <ul class="nav-list">
-            <li><a href="#home" data-nav="home" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-home"/></svg> Início</a></li>
-            <li><a href="#conteudo" data-nav="conteudo"><svg class="icon" aria-hidden="true"><use href="#icon-search"/></svg> Explorar</a></li>
-            <li><a href="#form" data-nav="form"><svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg> Formulário</a></li>
-            <li><a href="#sobre" data-nav="sobre"><svg class="icon" aria-hidden="true"><use href="#icon-cart"/></svg> Sobre</a></li>
+            <li><a href="#inicio" data-nav="inicio" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-home"/></svg> <span class="label">Início</span></a></li>
+            <li><a href="#problema" data-nav="problema"><svg class="icon" aria-hidden="true"><use href="#icon-search"/></svg> <span class="label">Problema</span></a></li>
+            <li><a href="#causa" data-nav="causa"><svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg> <span class="label">Causa</span></a></li>
+            <li><a href="#solucao" data-nav="solucao"><svg class="icon" aria-hidden="true"><use href="#icon-cart"/></svg> <span class="label">Solução</span></a></li>
+            <li><a href="#resultados" data-nav="resultados"><svg class="icon" aria-hidden="true"><use href="#icon-home"/></svg> <span class="label">Resultados</span></a></li>
+            <li><a href="#planos" data-nav="planos"><svg class="icon" aria-hidden="true"><use href="#icon-search"/></svg> <span class="label">Planos</span></a></li>
           </ul>
         </nav>
       </aside>
@@ -46,25 +46,33 @@
       <!-- Main views -->
       <main class="app-main" role="main">
         <div class="viewstack" aria-live="polite">
-          <!-- View: Home/Hero (text preservado) -->
-          <section id="home" class="view is-active" aria-hidden="false" aria-label="Início">
+          <!-- Início: preserva hero e texto -->
+          <section id="inicio" class="view is-active" aria-hidden="false" aria-label="Início">
             <div class="block">
               <h2>Experiência App‑Like moderna</h2>
               <div class="content">
                 <p>UI coerente, acessível e responsiva com tema claro/escuro, navegação mobile e componentes reutilizáveis.</p>
+                <div>
+                  <button class="btn btn--primary" onclick="openSheet()">Abrir filtros</button>
+                </div>
+              </div>
+            </div>
+            <div class="block">
+              <h2>Design</h2>
+              <div class="content">
                 <div class="card-h">
                   <div class="media" aria-hidden="true"></div>
                   <div class="body">
                     <p>Design tokens e tema dinâmico light/dark.</p>
-                    <div>
-                      <button class="btn btn--primary" onclick="openSheet()">Abrir filtros</button>
-                      <a class="btn btn--secondary" href="#conteudo" data-tab="conteudo">Explorar</a>
-                    </div>
+                    <a class="btn btn--secondary" href="#problema" data-nav="problema">Ir para Problema</a>
                   </div>
                 </div>
               </div>
             </div>
+          </section>
 
+          <!-- Problema: reorganiza cards 1/2 (texto preservado) -->
+          <section id="problema" class="view" aria-hidden="true" aria-label="Problema">
             <div class="block">
               <h2>Conteúdo em cartões</h2>
               <div class="content">
@@ -79,7 +87,6 @@
                     </div>
                   </div>
                 </div>
-
                 <div class="card-h">
                   <div class="media skeleton" aria-hidden="true"></div>
                   <div class="body">
@@ -88,41 +95,28 @@
                     <button class="btn btn--secondary">Abrir</button>
                   </div>
                 </div>
-
-                <div class="card-h">
-                  <div class="media" aria-hidden="true"></div>
-                  <div class="body">
-                    <h3>Card 3</h3>
-                    <p>Suporte total a teclado e leitores de tela.</p>
-                    <button class="btn btn--primary">Conferir</button>
-                  </div>
-                </div>
-
-                <div class="card-h">
-                  <div class="media" aria-hidden="true"></div>
-                  <div class="body">
-                    <h3>Card 4</h3>
-                    <p>Design tokens e tema dinâmico light/dark.</p>
-                    <button class="btn btn--secondary">Ver</button>
-                  </div>
-                </div>
               </div>
             </div>
           </section>
 
-          <!-- View: Explorar (conteúdo reorganizado, texto preservado) -->
-          <section id="conteudo" class="view" aria-hidden="true" aria-label="Explorar">
+          <!-- Causa: usa conteúdo textual existente -->
+          <section id="causa" class="view" aria-hidden="true" aria-label="Causa">
             <div class="block">
-              <h2>Explorar</h2>
+              <h2>Acessibilidade</h2>
+              <div class="content">
+                <p>Suporte total a teclado e leitores de tela.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Solução: inclui o formulário (texto preservado) -->
+          <section id="solucao" class="view" aria-hidden="true" aria-label="Solução">
+            <div class="block">
+              <h2>Design tokens e tema dinâmico light/dark.</h2>
               <div class="content">
                 <p>UI coerente, acessível e responsiva com tema claro/escuro, navegação mobile e componentes reutilizáveis.</p>
-                <p>Design tokens e tema dinâmico light/dark.</p>
               </div>
             </div>
-          </section>
-
-          <!-- View: Formulário (texto preservado) -->
-          <section id="form" class="view" aria-hidden="true" aria-label="Formulário de exemplo">
             <div class="block">
               <h2>Formulário com validação</h2>
               <div class="content">
@@ -150,12 +144,38 @@
             </div>
           </section>
 
-          <!-- View: Sobre/Informações (texto preservado) -->
-          <section id="sobre" class="view" aria-hidden="true" aria-label="Sobre">
+          <!-- Resultados: cards 3/4 (texto preservado) -->
+          <section id="resultados" class="view" aria-hidden="true" aria-label="Resultados">
             <div class="block">
-              <h2>Sobre</h2>
+              <h2>Resultados</h2>
+              <div class="content">
+                <div class="card-h">
+                  <div class="media" aria-hidden="true"></div>
+                  <div class="body">
+                    <h3>Card 3</h3>
+                    <p>Suporte total a teclado e leitores de tela.</p>
+                    <button class="btn btn--primary">Conferir</button>
+                  </div>
+                </div>
+                <div class="card-h">
+                  <div class="media" aria-hidden="true"></div>
+                  <div class="body">
+                    <h3>Card 4</h3>
+                    <p>Design tokens e tema dinâmico light/dark.</p>
+                    <button class="btn btn--secondary">Ver</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Planos: conteúdo textual preservado -->
+          <section id="planos" class="view" aria-hidden="true" aria-label="Planos">
+            <div class="block">
+              <h2>Planos</h2>
               <div class="content">
                 <p>UI coerente, acessível e responsiva com tema claro/escuro, navegação mobile e componentes reutilizáveis.</p>
+                <p>Design tokens e tema dinâmico light/dark.</p>
               </div>
             </div>
           </section>
@@ -180,13 +200,10 @@
         </dialog>
       </main>
 
-      <!-- Tabbar (mobile) -->
-      <nav class="app-tabbar" aria-label="Navegação por abas">
-        <a href="#home" data-tab="home" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-home"/></svg><span>Início</span></a>
-        <a href="#conteudo" data-tab="conteudo"><svg class="icon" aria-hidden="true"><use href="#icon-search"/></svg><span>Explorar</span></a>
-        <a href="#form" data-tab="form"><svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg><span>Form</span></a>
-        <a href="#sobre" data-tab="sobre"><svg class="icon" aria-hidden="true"><use href="#icon-cart"/></svg><span>Sobre</span></a>
-      </nav>
+      <!-- Footer opcional -->
+      <footer class="app-footer" role="contentinfo">
+        <small>© <span id="year"></span> Marca. Todos os direitos reservados.</small>
+      </footer>
     </div>
 
     <!-- Icons -->

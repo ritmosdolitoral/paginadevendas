@@ -8,149 +8,188 @@
     <meta name="description" content="Starter web app-like com UI/UX moderno, acessível e responsivo" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%232563eb'/%3E%3Ctext x='50' y='60' font-size='48' text-anchor='middle' fill='white' font-family='Arial, sans-serif'%3EA%3C/text%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./v2.css" />
     <script defer src="./app.js"></script>
+    <script defer src="./v2.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <div class="app-shell">
+      <!-- Topbar -->
+      <header class="app-topbar" role="banner">
+        <button class="btn btn--secondary" aria-label="Voltar" id="nav-back" title="Voltar">
+          ◀
+        </button>
+        <div class="app-brand">Marca</div>
+        <div class="app-top-actions">
+          <form role="search" aria-label="Buscar no site" onsubmit="return false">
+            <input class="input" placeholder="Buscar…" aria-label="Buscar" />
+          </form>
+          <button class="btn btn--secondary" id="theme-toggle" aria-pressed="false" aria-label="Alternar tema">
+            <svg class="icon" aria-hidden="true"><use href="#icon-sun" /></svg>
+            <span class="hide-sm">Tema</span>
+          </button>
+        </div>
+      </header>
 
-    <header class="app-header">
-      <div class="container header-row">
-        <a class="logo" href="/">Marca</a>
-        <form role="search" class="search" aria-label="Buscar no site">
-          <input class="input" placeholder="Buscar…" aria-label="Buscar" />
-        </form>
-        <nav aria-label="Utilitários" class="util-nav">
-          <ul class="util">
-            <li>
-              <button class="btn btn--secondary" id="theme-toggle" aria-pressed="false" aria-label="Alternar tema">
-                <svg class="icon" aria-hidden="true"><use href="#icon-sun" /></svg>
-                <span class="hide-sm">Tema</span>
-              </button>
-            </li>
-            <li><a class="link" href="/conta" aria-label="Conta"><svg class="icon" aria-hidden="true"><use href="#icon-user" /></svg><span class="hide-sm">Conta</span></a></li>
-            <li><a class="link" href="/carrinho" aria-label="Carrinho"><svg class="icon" aria-hidden="true"><use href="#icon-cart" /></svg><span class="hide-sm">Carrinho</span></a></li>
+      <!-- Sidebar (desktop) -->
+      <aside class="app-sidebar" aria-label="Navegação principal">
+        <nav>
+          <ul class="nav-list">
+            <li><a href="#home" data-nav="home" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-home"/></svg> Início</a></li>
+            <li><a href="#conteudo" data-nav="conteudo"><svg class="icon" aria-hidden="true"><use href="#icon-search"/></svg> Explorar</a></li>
+            <li><a href="#form" data-nav="form"><svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg> Formulário</a></li>
+            <li><a href="#sobre" data-nav="sobre"><svg class="icon" aria-hidden="true"><use href="#icon-cart"/></svg> Sobre</a></li>
           </ul>
         </nav>
-      </div>
-    </header>
+      </aside>
 
-    <main id="conteudo" role="main">
-      <section class="section hero">
-        <div class="container">
-          <h1>Experiência App‑Like moderna</h1>
-          <p>UI coerente, acessível e responsiva com tema claro/escuro, navegação mobile e componentes reutilizáveis.</p>
-          <div class="actions">
-            <button class="btn btn--primary" onclick="openSheet()">Abrir filtros</button>
-            <a class="btn btn--secondary" href="#grid">Explorar</a>
+      <!-- Main views -->
+      <main class="app-main" role="main">
+        <div class="viewstack" aria-live="polite">
+          <!-- View: Home/Hero (text preservado) -->
+          <section id="home" class="view is-active" aria-hidden="false" aria-label="Início">
+            <div class="block">
+              <h2>Experiência App‑Like moderna</h2>
+              <div class="content">
+                <p>UI coerente, acessível e responsiva com tema claro/escuro, navegação mobile e componentes reutilizáveis.</p>
+                <div class="card-h">
+                  <div class="media" aria-hidden="true"></div>
+                  <div class="body">
+                    <p>Design tokens e tema dinâmico light/dark.</p>
+                    <div>
+                      <button class="btn btn--primary" onclick="openSheet()">Abrir filtros</button>
+                      <a class="btn btn--secondary" href="#conteudo" data-tab="conteudo">Explorar</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="block">
+              <h2>Conteúdo em cartões</h2>
+              <div class="content">
+                <div class="card-h">
+                  <div class="media" aria-hidden="true"></div>
+                  <div class="body">
+                    <h3>Card 1</h3>
+                    <p>Exemplo de card com conteúdo breve e ação.</p>
+                    <div>
+                      <button class="btn btn--primary">Ação</button>
+                      <button class="btn btn--secondary">Detalhes</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card-h">
+                  <div class="media skeleton" aria-hidden="true"></div>
+                  <div class="body">
+                    <h3>Card 2</h3>
+                    <div class="skeleton" style="height: 16px; border-radius: 6px"></div>
+                    <button class="btn btn--secondary">Abrir</button>
+                  </div>
+                </div>
+
+                <div class="card-h">
+                  <div class="media" aria-hidden="true"></div>
+                  <div class="body">
+                    <h3>Card 3</h3>
+                    <p>Suporte total a teclado e leitores de tela.</p>
+                    <button class="btn btn--primary">Conferir</button>
+                  </div>
+                </div>
+
+                <div class="card-h">
+                  <div class="media" aria-hidden="true"></div>
+                  <div class="body">
+                    <h3>Card 4</h3>
+                    <p>Design tokens e tema dinâmico light/dark.</p>
+                    <button class="btn btn--secondary">Ver</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View: Explorar (conteúdo reorganizado, texto preservado) -->
+          <section id="conteudo" class="view" aria-hidden="true" aria-label="Explorar">
+            <div class="block">
+              <h2>Explorar</h2>
+              <div class="content">
+                <p>UI coerente, acessível e responsiva com tema claro/escuro, navegação mobile e componentes reutilizáveis.</p>
+                <p>Design tokens e tema dinâmico light/dark.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- View: Formulário (texto preservado) -->
+          <section id="form" class="view" aria-hidden="true" aria-label="Formulário de exemplo">
+            <div class="block">
+              <h2>Formulário com validação</h2>
+              <div class="content">
+                <form id="demo-form" novalidate>
+                  <div class="field">
+                    <label for="email">E-mail</label>
+                    <input id="email" class="input" type="email" required aria-describedby="email-help email-err" aria-invalid="false" />
+                    <div id="email-help" class="helper">Ex.: nome@dominio.com</div>
+                    <div id="email-err" class="error" role="alert" aria-live="polite" hidden>E-mail inválido</div>
+                  </div>
+                  <div class="field">
+                    <label for="nome">Nome</label>
+                    <input id="nome" class="input" type="text" required aria-invalid="false" />
+                  </div>
+                  <div class="field">
+                    <label class="switch">
+                      <input type="checkbox" id="news" />
+                      <span class="slider" aria-hidden="true"></span>
+                      <span class="switch-label">Receber novidades</span>
+                    </label>
+                  </div>
+                  <button class="btn btn--primary" type="submit">Enviar</button>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <!-- View: Sobre/Informações (texto preservado) -->
+          <section id="sobre" class="view" aria-hidden="true" aria-label="Sobre">
+            <div class="block">
+              <h2>Sobre</h2>
+              <div class="content">
+                <p>UI coerente, acessível e responsiva com tema claro/escuro, navegação mobile e componentes reutilizáveis.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Sheet -->
+        <dialog id="sheet" aria-label="Filtros" aria-modal="true">
+          <header class="sheet-head">
+            <strong>Filtros</strong>
+            <button class="btn btn--secondary" onclick="closeSheet()" aria-label="Fechar">✕</button>
+          </header>
+          <div class="content">
+            <div class="field">
+              <label for="q">Busca</label>
+              <input id="q" class="input" placeholder="Digite um termo" />
+            </div>
+            <div class="actions">
+              <button class="btn btn--secondary" onclick="closeSheet()">Cancelar</button>
+              <button class="btn btn--primary" onclick="closeSheet()">Aplicar</button>
+            </div>
           </div>
-        </div>
-      </section>
+        </dialog>
+      </main>
 
-      <section class="section" id="grid" aria-label="Conteúdo em cartões">
-        <div class="container">
-          <div class="grid cols-2 cols-3-desktop">
-            <article class="card">
-              <header class="card-head">
-                <h2 class="card-title">Card 1</h2>
-                <span class="badge">Novo</span>
-              </header>
-              <p>Exemplo de card com conteúdo breve e ação.</p>
-              <footer class="card-foot">
-                <button class="btn btn--primary">Ação</button>
-                <button class="btn btn--secondary">Detalhes</button>
-              </footer>
-            </article>
-            <article class="card">
-              <header class="card-head">
-                <h2 class="card-title">Card 2</h2>
-              </header>
-              <div class="skeleton" style="height: 80px; margin: 8px 0; border-radius: 8px;"></div>
-              <footer class="card-foot">
-                <button class="btn btn--secondary">Abrir</button>
-              </footer>
-            </article>
-            <article class="card">
-              <header class="card-head">
-                <h2 class="card-title">Card 3</h2>
-              </header>
-              <p>Suporte total a teclado e leitores de tela.</p>
-              <footer class="card-foot">
-                <button class="btn btn--primary">Conferir</button>
-              </footer>
-            </article>
-            <article class="card">
-              <header class="card-head">
-                <h2 class="card-title">Card 4</h2>
-              </header>
-              <p>Design tokens e tema dinâmico light/dark.</p>
-              <footer class="card-foot">
-                <button class="btn btn--secondary">Ver</button>
-              </footer>
-            </article>
-          </div>
-        </div>
-      </section>
+      <!-- Tabbar (mobile) -->
+      <nav class="app-tabbar" aria-label="Navegação por abas">
+        <a href="#home" data-tab="home" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-home"/></svg><span>Início</span></a>
+        <a href="#conteudo" data-tab="conteudo"><svg class="icon" aria-hidden="true"><use href="#icon-search"/></svg><span>Explorar</span></a>
+        <a href="#form" data-tab="form"><svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg><span>Form</span></a>
+        <a href="#sobre" data-tab="sobre"><svg class="icon" aria-hidden="true"><use href="#icon-cart"/></svg><span>Sobre</span></a>
+      </nav>
+    </div>
 
-      <section class="section" aria-label="Formulário de exemplo">
-        <div class="container">
-          <h2>Formulário com validação</h2>
-          <form id="demo-form" novalidate>
-            <div class="field">
-              <label for="email">E-mail</label>
-              <input id="email" class="input" type="email" required aria-describedby="email-help email-err" aria-invalid="false" />
-              <div id="email-help" class="helper">Ex.: nome@dominio.com</div>
-              <div id="email-err" class="error" role="alert" aria-live="polite" hidden>E-mail inválido</div>
-            </div>
-            <div class="field">
-              <label for="nome">Nome</label>
-              <input id="nome" class="input" type="text" required aria-invalid="false" />
-            </div>
-            <div class="field">
-              <label class="switch">
-                <input type="checkbox" id="news" />
-                <span class="slider" aria-hidden="true"></span>
-                <span class="switch-label">Receber novidades</span>
-              </label>
-            </div>
-            <button class="btn btn--primary" type="submit">Enviar</button>
-          </form>
-        </div>
-      </section>
-    </main>
-
-    <footer class="app-footer">
-      <div class="container">
-        <small>© <span id="year"></span> Marca. Todos os direitos reservados.</small>
-      </div>
-    </footer>
-
-    <nav class="bottom-nav" aria-label="Navegação principal">
-      <ul>
-        <li><a href="#" class="is-active" aria-current="page"><svg aria-hidden="true" class="icon"><use href="#icon-home" /></svg><span>Início</span></a></li>
-        <li><a href="#explorar"><svg aria-hidden="true" class="icon"><use href="#icon-search" /></svg><span>Explorar</span></a></li>
-        <li><a href="#carrinho"><svg aria-hidden="true" class="icon"><use href="#icon-cart" /></svg><span>Carrinho</span></a></li>
-        <li><a href="#perfil"><svg aria-hidden="true" class="icon"><use href="#icon-user" /></svg><span>Perfil</span></a></li>
-      </ul>
-    </nav>
-
-    <dialog id="sheet" aria-label="Filtros" aria-modal="true">
-      <header class="sheet-head">
-        <strong>Filtros</strong>
-        <button class="btn btn--secondary" onclick="closeSheet()" aria-label="Fechar">✕</button>
-      </header>
-      <div class="content">
-        <div class="field">
-          <label for="q">Busca</label>
-          <input id="q" class="input" placeholder="Digite um termo" />
-        </div>
-        <div class="actions">
-          <button class="btn btn--secondary" onclick="closeSheet()">Cancelar</button>
-          <button class="btn btn--primary" onclick="closeSheet()">Aplicar</button>
-        </div>
-      </div>
-    </dialog>
-
+    <!-- Icons -->
     <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
       <symbol id="icon-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 3 10h2v10h6V14h2v6h6V10h2z"/></symbol>
       <symbol id="icon-search" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 14 15.5l.27.28v.79l5 4.99L21.49 19zM6.5 11a4.5 4.5 0 1 1 9 0a4.5 4.5 0 0 1-9 0"/></symbol>

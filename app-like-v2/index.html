@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>App‑Like V2 Starter</title>
+    <meta name="description" content="Starter web app-like com UI/UX moderno, acessível e responsivo" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%232563eb'/%3E%3Ctext x='50' y='60' font-size='48' text-anchor='middle' fill='white' font-family='Arial, sans-serif'%3EA%3C/text%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    <header class="app-header">
+      <div class="container header-row">
+        <a class="logo" href="/">Marca</a>
+        <form role="search" class="search" aria-label="Buscar no site">
+          <input class="input" placeholder="Buscar…" aria-label="Buscar" />
+        </form>
+        <nav aria-label="Utilitários" class="util-nav">
+          <ul class="util">
+            <li>
+              <button class="btn btn--secondary" id="theme-toggle" aria-pressed="false" aria-label="Alternar tema">
+                <svg class="icon" aria-hidden="true"><use href="#icon-sun" /></svg>
+                <span class="hide-sm">Tema</span>
+              </button>
+            </li>
+            <li><a class="link" href="/conta" aria-label="Conta"><svg class="icon" aria-hidden="true"><use href="#icon-user" /></svg><span class="hide-sm">Conta</span></a></li>
+            <li><a class="link" href="/carrinho" aria-label="Carrinho"><svg class="icon" aria-hidden="true"><use href="#icon-cart" /></svg><span class="hide-sm">Carrinho</span></a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="conteudo" role="main">
+      <section class="section hero">
+        <div class="container">
+          <h1>Experiência App‑Like moderna</h1>
+          <p>UI coerente, acessível e responsiva com tema claro/escuro, navegação mobile e componentes reutilizáveis.</p>
+          <div class="actions">
+            <button class="btn btn--primary" onclick="openSheet()">Abrir filtros</button>
+            <a class="btn btn--secondary" href="#grid">Explorar</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="grid" aria-label="Conteúdo em cartões">
+        <div class="container">
+          <div class="grid cols-2 cols-3-desktop">
+            <article class="card">
+              <header class="card-head">
+                <h2 class="card-title">Card 1</h2>
+                <span class="badge">Novo</span>
+              </header>
+              <p>Exemplo de card com conteúdo breve e ação.</p>
+              <footer class="card-foot">
+                <button class="btn btn--primary">Ação</button>
+                <button class="btn btn--secondary">Detalhes</button>
+              </footer>
+            </article>
+            <article class="card">
+              <header class="card-head">
+                <h2 class="card-title">Card 2</h2>
+              </header>
+              <div class="skeleton" style="height: 80px; margin: 8px 0; border-radius: 8px;"></div>
+              <footer class="card-foot">
+                <button class="btn btn--secondary">Abrir</button>
+              </footer>
+            </article>
+            <article class="card">
+              <header class="card-head">
+                <h2 class="card-title">Card 3</h2>
+              </header>
+              <p>Suporte total a teclado e leitores de tela.</p>
+              <footer class="card-foot">
+                <button class="btn btn--primary">Conferir</button>
+              </footer>
+            </article>
+            <article class="card">
+              <header class="card-head">
+                <h2 class="card-title">Card 4</h2>
+              </header>
+              <p>Design tokens e tema dinâmico light/dark.</p>
+              <footer class="card-foot">
+                <button class="btn btn--secondary">Ver</button>
+              </footer>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Formulário de exemplo">
+        <div class="container">
+          <h2>Formulário com validação</h2>
+          <form id="demo-form" novalidate>
+            <div class="field">
+              <label for="email">E-mail</label>
+              <input id="email" class="input" type="email" required aria-describedby="email-help email-err" aria-invalid="false" />
+              <div id="email-help" class="helper">Ex.: nome@dominio.com</div>
+              <div id="email-err" class="error" role="alert" aria-live="polite" hidden>E-mail inválido</div>
+            </div>
+            <div class="field">
+              <label for="nome">Nome</label>
+              <input id="nome" class="input" type="text" required aria-invalid="false" />
+            </div>
+            <div class="field">
+              <label class="switch">
+                <input type="checkbox" id="news" />
+                <span class="slider" aria-hidden="true"></span>
+                <span class="switch-label">Receber novidades</span>
+              </label>
+            </div>
+            <button class="btn btn--primary" type="submit">Enviar</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div class="container">
+        <small>© <span id="year"></span> Marca. Todos os direitos reservados.</small>
+      </div>
+    </footer>
+
+    <nav class="bottom-nav" aria-label="Navegação principal">
+      <ul>
+        <li><a href="#" class="is-active" aria-current="page"><svg aria-hidden="true" class="icon"><use href="#icon-home" /></svg><span>Início</span></a></li>
+        <li><a href="#explorar"><svg aria-hidden="true" class="icon"><use href="#icon-search" /></svg><span>Explorar</span></a></li>
+        <li><a href="#carrinho"><svg aria-hidden="true" class="icon"><use href="#icon-cart" /></svg><span>Carrinho</span></a></li>
+        <li><a href="#perfil"><svg aria-hidden="true" class="icon"><use href="#icon-user" /></svg><span>Perfil</span></a></li>
+      </ul>
+    </nav>
+
+    <dialog id="sheet" aria-label="Filtros" aria-modal="true">
+      <header class="sheet-head">
+        <strong>Filtros</strong>
+        <button class="btn btn--secondary" onclick="closeSheet()" aria-label="Fechar">✕</button>
+      </header>
+      <div class="content">
+        <div class="field">
+          <label for="q">Busca</label>
+          <input id="q" class="input" placeholder="Digite um termo" />
+        </div>
+        <div class="actions">
+          <button class="btn btn--secondary" onclick="closeSheet()">Cancelar</button>
+          <button class="btn btn--primary" onclick="closeSheet()">Aplicar</button>
+        </div>
+      </div>
+    </dialog>
+
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+      <symbol id="icon-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 3 10h2v10h6V14h2v6h6V10h2z"/></symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 14 15.5l.27.28v.79l5 4.99L21.49 19zM6.5 11a4.5 4.5 0 1 1 9 0a4.5 4.5 0 0 1-9 0"/></symbol>
+      <symbol id="icon-cart" viewBox="0 0 24 24"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4a2 2 0 0 0 0-4m10 0a2 2 0 1 0 0 4a2 2 0 0 0 0-4M7.17 14h9.58a2 2 0 0 0 1.89-1.37L21 6H6.21l-.94-2H2v2h2l3.6 7.59l-1.35 2.44A2 2 0 0 0 6 18h12v-2H6z"/></symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5a5 5 0 0 0 5 5m0 2c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6"/></symbol>
+      <symbol id="icon-sun" viewBox="0 0 24 24"><path fill="currentColor" d="M6.76 4.84l-1.8-1.79L3.17 4.83l1.79 1.8zm10.45 14.32l1.79 1.79l1.79-1.79l-1.79-1.79zM1 13h3v-2H1zm19 0h3v-2h-3zM4.22 19.78l1.79-1.79l-1.8-1.8l-1.79 1.8zM18 6.76l1.79-1.8l-1.8-1.79L16.2 4.97zM12 18a6 6 0 1 1 0-12a6 6 0 0 1 0 12m-1-16h2V1h-2zm0 21h2v-3h-2z"/></symbol>
+      <symbol id="icon-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M12.74 2a10 10 0 1 0 9.26 13.42A8 8 0 0 1 12.74 2"/></symbol>
+    </svg>
+  </body>
+</html>

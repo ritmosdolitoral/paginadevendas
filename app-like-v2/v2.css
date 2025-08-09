@@ -27,19 +27,20 @@ body { margin: 0; background: radial-gradient(1200px 600px at 0% -10%, color-mix
 @media (min-width: 768px) { .hide-sm { display: inline; } }
 
 /* App Shell */
-.app-shell { display: grid; grid-template-rows: 56px 1fr 64px; grid-template-columns: 1fr; min-height: 100dvh; }
+.app-shell { display: grid; grid-template-columns: 72px 1fr; grid-template-rows: 56px 1fr auto; min-height: 100dvh; }
 @media (min-width: 1024px) { .app-shell { grid-template-columns: 280px 1fr; grid-template-rows: 64px 1fr auto; } }
 
-.app-topbar { grid-column: 1/-1; display: flex; align-items: center; gap: 12px; padding: 0 16px; backdrop-filter: blur(8px) saturate(140%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); border-bottom: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); }
+.app-topbar { grid-column: 2 / 3; grid-row: 1; display: flex; align-items: center; gap: 12px; padding: 0 16px; backdrop-filter: blur(8px) saturate(140%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); border-bottom: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); }
 .app-brand { font-weight: 800; }
 .app-top-actions { margin-left: auto; display: flex; gap: 8px; }
 
-.app-sidebar { display: none; }
+/* Sidebar always visible, vertical */
+.app-sidebar { display: flex; grid-column: 1 / 2; grid-row: 1 / span 3; flex-direction: column; gap: 12px; padding: 12px 8px; border-right: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: linear-gradient(180deg, var(--v2-surface), var(--v2-surface-2)); position: sticky; top: 0; height: 100dvh; }
 @media (min-width: 1024px) {
-  .app-sidebar { display: flex; grid-row: 1 / span 2; grid-column: 1; flex-direction: column; gap: 12px; padding: 16px; border-right: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: linear-gradient(180deg, var(--v2-surface), var(--v2-surface-2)); }
+  .app-sidebar { padding: 16px; }
 }
 
-.app-main { position: relative; overflow: hidden; background: linear-gradient(180deg, var(--v2-surface), var(--v2-bg)); }
+.app-main { grid-column: 2 / 3; grid-row: 2 / 3; position: relative; overflow: hidden; background: linear-gradient(180deg, var(--v2-surface), var(--v2-bg)); }
 
 /* Tabbar mobile */
 .app-tabbar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px 12px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); backdrop-filter: blur(8px) saturate(140%); }
@@ -48,9 +49,11 @@ body { margin: 0; background: radial-gradient(1200px 600px at 0% -10%, color-mix
 .app-tabbar a[aria-current="page"] { color: var(--v2-accent); background: color-mix(in oklab, var(--v2-accent), transparent 90%); font-weight: 700; }
 
 /* Nav list (sidebar) */
-.nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.nav-list a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; color: var(--v2-text); text-decoration: none; }
+.nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+.nav-list a { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 8px; min-height: 44px; border-radius: 12px; color: var(--v2-text); text-decoration: none; }
 .nav-list a[aria-current="page"] { background: color-mix(in oklab, var(--v2-accent), transparent 90%); color: var(--v2-accent); font-weight: 700; }
+.nav-list .label { display: none; }
+@media (min-width: 1024px) { .nav-list a { justify-content: flex-start; padding: 10px 12px; } .nav-list .label { display: inline; } }
 
 /* Pages */
 .viewstack { position: relative; height: 100%; }
@@ -101,7 +104,7 @@ dialog[open] { transform: translateY(0); opacity: 1; }
 @media (max-width: 768px) { dialog { position: fixed; inset: auto 0 0 0; max-width: none; border-radius: 16px 16px 0 0; } }
 
 /* Footer */
-.app-footer { grid-column: 1/-1; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); }
+.app-footer { grid-column: 2 / 3; grid-row: 3; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); }
 
 /* A11y */
 :focus-visible { outline: 3px solid color-mix(in oklab, var(--v2-accent), white 60%); outline-offset: 2px; }

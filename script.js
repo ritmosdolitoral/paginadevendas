@@ -743,7 +743,7 @@ function showWhatsAppFunnel(flow, flowType) {
     // Navegação por teclado no funil
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
-            const activeOption = document.querySelector('.funnel-option:focus');
+            const activeOption = window.hubQuerySafe('.funnel-option:focus');
             if (activeOption) {
                 e.preventDefault();
                 selectOption(activeOption, flow, flowType);
@@ -752,7 +752,8 @@ function showWhatsAppFunnel(flow, flowType) {
         
         // Navegação com setas
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-            const currentStep = parseInt(document.querySelector('.funnel-step.active').dataset.step);
+            const activeStepEl = window.hubQuerySafe('.funnel-step.active');
+            const currentStep = activeStepEl ? parseInt(activeStepEl.dataset.step) : 0;
             const totalSteps = flow.steps.length;
             
             if (e.key === 'ArrowLeft' && currentStep > 1) {
@@ -765,7 +766,7 @@ function showWhatsAppFunnel(flow, flowType) {
     
     // Foco automático na primeira opção
     setTimeout(() => {
-        const firstOption = modal.querySelector('.funnel-option');
+        const firstOption = modal ? modal.querySelector('.funnel-option') : null;
         if (firstOption) {
             firstOption.focus();
         }
@@ -903,7 +904,7 @@ function showStep(stepNumber) {
     steps.forEach(step => step.classList.remove('active'));
     
     // Mostrar passo atual
-    const currentStep = document.querySelector(`.funnel-step[data-step="${stepNumber}"]`);
+    const currentStep = window.hubQuerySafe(`.funnel-step[data-step="${stepNumber}"]`);
     if (currentStep) {
         currentStep.classList.add('active');
     }
@@ -912,7 +913,7 @@ function showStep(stepNumber) {
     const answers = JSON.parse(localStorage.getItem(CONFIG.localStorage.userAnswers) || '{}');
     const previousSelection = answers[`step_${stepNumber}`];
     if (previousSelection) {
-        const selectedOption = document.querySelector(`.funnel-option[data-value="${previousSelection}"][data-step="${stepNumber}"]`);
+        const selectedOption = window.hubQuerySafe(`.funnel-option[data-value="${previousSelection}"][data-step="${stepNumber}"]`);
         if (selectedOption) {
             selectedOption.classList.add('selected');
         }
@@ -929,8 +930,8 @@ function updateProgress(currentStep, totalSteps) {
     }
     
     // Atualizar barra de progresso
-    const progressFill = document.querySelector('.progress-fill');
-    const progressPercentage = document.querySelector('.progress-percentage');
+    const progressFill = window.hubQuerySafe('.progress-fill');
+    const progressPercentage = window.hubQuerySafe('.progress-percentage');
     
     if (progressFill) {
         progressFill.style.width = `${percentage}%`;
@@ -1093,7 +1094,7 @@ function generateFinalMessage(flow, flowType) {
     message += `🌐 Site: conexaobuzios.com\n`;
     
     // Mostrar feedback de conclusão
-    const modal = document.querySelector('.whatsapp-funnel-modal');
+    const modal = window.hubQuerySafe('.whatsapp-funnel-modal');
     if (modal) {
         const content = modal.querySelector('.whatsapp-funnel-content');
         content.innerHTML = `
@@ -1191,7 +1192,7 @@ function generateFinalMessage(flow, flowType) {
 }
 
 function closeWhatsAppFunnel() {
-    const modal = document.querySelector('.whatsapp-funnel-modal');
+    const modal = window.hubQuerySafe('.whatsapp-funnel-modal');
     if (modal) {
         // Remover event listeners antes de remover o modal
         const options = modal.querySelectorAll('.funnel-option');
@@ -1200,7 +1201,7 @@ function closeWhatsAppFunnel() {
         });
         
         // Remover estilos adicionados
-        const addedStyles = document.querySelector('style[data-funnel-styles]');
+        const addedStyles = window.hubQuerySafe('style[data-funnel-styles]');
         if (addedStyles) {
             addedStyles.remove();
         }
@@ -1353,7 +1354,8 @@ function initializeScrollEffects() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const href = this.getAttribute('href');
+            const target = window.hubQuerySafe(href);
             if (target) {
                 target.scrollIntoView({
                     behavior: 'smooth',
@@ -1404,7 +1406,7 @@ function initializeMobileMenu() {
                 
                 // Focar no primeiro link do menu
                 setTimeout(() => {
-                    const firstLink = navMenu.querySelector('a');
+                    const firstLink = navMenu ? navMenu.querySelector('a') : null;
                     if (firstLink) {
                         firstLink.focus();
                     }
@@ -1461,7 +1463,7 @@ function initializeMobileMenu() {
     });
     
     // Melhorar acessibilidade do WhatsApp flutuante
-    const whatsappFloat = document.querySelector('.whatsapp-float');
+    const whatsappFloat = window.hubQuerySafe('.whatsapp-float');
     if (whatsappFloat) {
         whatsappFloat.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -2110,7 +2112,11 @@ if (!window.toggleFAQ) {
     }
 
     shell.appendChild(topbar);
-    shell.appendChild(portal);
+
+    // Create panel container and place portal inside
+    const panel = createEl('div', { class:'hub-panel' });
+    panel.appendChild(portal);
+    shell.appendChild(panel);
 
     document.body.appendChild(shell);
 
@@ -2281,4 +2287,40 @@ if (!window.toggleFAQ) {
   } else {
     lazyInitialize();
   }
+})();
+
+/* hub-appmode-v1 — Helpers defensivos (no topo) */
+(function(){
+  function _isNonEmptyString(v){ return (typeof v === 'string' && v.trim().length > 0); }
+  window.hubByIdSafe = function(id){
+    try {
+      if (!_isNonEmptyString(id)) return null;
+      if (id.startsWith('#')) id = id.slice(1);
+      const byId = document.getElementById(id);
+      if (byId) return byId;
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        return document.querySelector('#' + CSS.escape(id));
+      }
+      const safeId = id.replace(/[^a-zA-Z0-9\-_:.]/g, '');
+      if (!safeId) return null;
+      return document.querySelector('#' + safeId);
+    } catch (err) {
+      console.warn('hubByIdSafe failed for id:', id, err);
+      return null;
+    }
+  };
+  window.hubQuerySafe = function(selector){
+    try {
+      if (!_isNonEmptyString(selector)) return null;
+      if (selector.trim() === '#') return null;
+      return document.querySelector(selector);
+    } catch (err) {
+      console.warn('hubQuerySafe rejected selector:', selector, err);
+      return null;
+    }
+  };
+  window.hubNormalizeIds = function(ids){
+    if (!Array.isArray(ids)) return [];
+    return ids.map(id => (typeof id === 'string' ? id.trim().replace(/^#/, '') : '')).filter(Boolean);
+  };
 })();

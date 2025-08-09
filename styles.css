@@ -2162,7 +2162,7 @@ a:focus-visible {
 #hub-bottomnav .hub-tab-btn {
   appearance: none; border: none; background: transparent; color: var(--gray-700);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 64px; height: 44px; border-radius: 10px; gap: 4px; cursor: pointer;
+  width: 64px; height: 48px; border-radius: 10px; gap: 4px; cursor: pointer;
 }
 #hub-bottomnav .hub-tab-btn .hub-tab-icon { font-size: 18px; }
 #hub-bottomnav .hub-tab-btn.hub-active { color: var(--hub-primary); }
@@ -2233,4 +2233,40 @@ a:focus-visible {
     display: grid; grid-template-columns: 1fr minmax(0, 1280px) 1fr;
   }
   body .hub-app-desktop-center > * { grid-column: 2; }
+} 
+
+/* === HUB APP MODE: ajustes finais e overrides (hub-appmode-v1) === */
+:root {
+  /* tokens (hub-appmode-v1) */
+  --hub-radius: 12px;
+  --hub-surface: #ffffff;
+  --hub-elev-1: 0 6px 18px rgba(15,23,42,0.08);
+  --hub-shadow-sm: 0 4px 12px rgba(2,6,23,0.06);
+  --hub-primary: var(--primary, #1066d6);
+  --hub-on-primary: var(--on-primary, #ffffff);
+  --hub-interaction-duration: 220ms;
+}
+
+/* Desktop topbar height */
+@media (min-width: 992px) {
+  #hub-topbar.hub-topbar[data-added-by="hub-appmode-v1"] { height: 68px; }
+}
+
+/* Bottomnav should only appear up to 760px */
+@media (min-width: 761px) {
+  #hub-bottomnav.hub-bottomnav[data-added-by="hub-appmode-v1"] { display: none; }
+}
+
+/* Focus ring for hub controls */
+#hub-topbar .hub-topbar-action:focus-visible,
+#hub-bottomnav .hub-tab-btn:focus-visible,
+#hub-bottom-sheet .hub-sheet-close:focus-visible,
+#hub-plan-compare .hub-toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16,102,214,0.18);
+}
+
+/* Apply elevation to portal */
+#hub-portal.hub-portal[data-added-by="hub-appmode-v1"] {
+  box-shadow: var(--hub-elev-1);
 } 

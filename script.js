@@ -2043,6 +2043,7 @@ if (!window.toggleFAQ) {
   const listeners = [];
   const observers = [];
   const movedNodes = []; // {node, originalParent, nextSibling}
+  window.__hubMovedNodes = movedNodes;
   let initialized = false;
 
   function mark(node){ if(node && node.setAttribute){ node.setAttribute('data-added-by', HUB_ATTR); added.add(node);} }
@@ -2082,25 +2083,31 @@ if (!window.toggleFAQ) {
     if(qs('#hub-app-shell')) return qs('#hub-app-shell');
     const shell = createEl('div', { id:'hub-app-shell' });
 
-    const topbar = createEl('div', { id:'hub-topbar', class:'hub-topbar', role:'navigation', ariaLabel:'Top bar' });
+    const topbar = createEl('header', { id:'hub-topbar', class:'hub-topbar', role:'banner', ariaLabel:'Menu principal' });
     const left = createEl('div', { class:'hub-topbar-left' });
     const brand = qs('.nav-brand') || qs('header .nav-brand');
     if(brand){
-      const clone = brand.cloneNode(true);
-      mark(clone);
-      left.appendChild(clone);
+      try { moveNode(brand, left); } catch(err){ console.info('hub-appmode: reparenting brand skipped', err); }
     } else {
       const fallback = createEl('div', { class:'hub-topbar-title', role:'img', ariaLabel:'App' });
       fallback.textContent = '';
       left.appendChild(fallback);
     }
-    const actionSrc = qs('.hero-cta button, .cta-buttons .btn-primary');
+    const actionSrc = qs('#hero .cta button, .hero-cta button, .hero .actions button, .cta-buttons .btn-primary, header .cta .btn-primary, .cta-primary');
     const primaryAction = createEl('button', { class:'hub-topbar-action hub-ripple', type:'button', ariaLabel:'Ação principal' });
     primaryAction.innerHTML = '<i class="fas fa-rocket" aria-hidden="true"></i>';
     if(actionSrc){ on(primaryAction, 'click', ()=>{ try{ actionSrc.dispatchEvent(new MouseEvent('click', {bubbles:true})); }catch(_){ try{ actionSrc.click(); }catch(__){} } dispatch('hub:cta-click', { context:'topbar' }); }); }
     topbar.appendChild(left); topbar.appendChild(primaryAction);
 
     const portal = createEl('div', { id:'hub-portal', class:'hub-portal hub-app-padding-top hub-app-padding-bottom', role:'region', ariaLabel:'Conteúdo principal' });
+
+    // Adjust topbar position below existing header height if header is fixed
+    const header = qs('header.header, #header');
+    if(header){
+      const rect = header.getBoundingClientRect();
+      const h = rect.height || 0;
+      topbar.style.top = h + 'px';
+    }
 
     shell.appendChild(topbar);
     shell.appendChild(portal);
@@ -2109,7 +2116,7 @@ if (!window.toggleFAQ) {
 
     // Bottom nav (mobile only)
     if(!qs('#hub-bottomnav')){
-      const bottomnav = createEl('nav', { id:'hub-bottomnav', class:'hub-bottomnav', role:'tablist', ariaLabel:'Navegação inferior' });
+      const bottomnav = createEl('nav', { id:'hub-bottomnav', class:'hub-bottomnav', role:'navigation', ariaLabel:'Navegação principal' });
       const tabs = [
         { id:'hero', icon:'fa-home', label:'Início' },
         { id:'planos', icon:'fa-layer-group', label:'Planos' },
@@ -2117,16 +2124,29 @@ if (!window.toggleFAQ) {
         { id:'contato', icon:'fa-phone', label:'Contato' }
       ];
       tabs.forEach((t, idx)=>{
-        const btn = createEl('button', { class:'hub-tab-btn' + (idx===0?' hub-active':''), type:'button', role:'tab', ariaControls:t.id, ariaSelected: idx===0?'true':'false' });
+        const btn = createEl('button', { class:'hub-tab-btn' + (idx===0?' hub-active':''), type:'button', role:'tab', ariaControls:t.id, ariaSelected: idx===0?'true':'false', ariaCurrent: idx===0?'true':'false' });
         btn.innerHTML = `<i class="fas ${t.icon} hub-tab-icon" aria-hidden="true"></i><span class="hub-tab-label">${t.label}</span>`;
         on(btn, 'click', ()=>{
           const target = qs(`#${t.id}`) || qs(`section.${t.id}`) || qs(`[data-hub-anchor="${t.id}"]`);
           if(target){ target.scrollIntoView({ behavior:'smooth' }); dispatch('hub:navigate', { section: t.id }); }
-          qsa('#hub-bottomnav .hub-tab-btn').forEach(b=>{ const active = b===btn; b.classList.toggle('hub-active', active); b.setAttribute('aria-selected', active?'true':'false'); });
+          qsa('#hub-bottomnav .hub-tab-btn').forEach(b=>{ const active = b===btn; b.classList.toggle('hub-active', active); b.setAttribute('aria-selected', active?'true':'false'); b.setAttribute('aria-current', active?'true':'false'); });
         });
         bottomnav.appendChild(btn);
       });
       document.body.appendChild(bottomnav);
+
+      // Keyboard navigation for tabs (left/right)
+      on(bottomnav, 'keydown', (e)=>{
+        const keys = ['ArrowLeft','ArrowRight'];
+        if(!keys.includes(e.key)) return;
+        const items = qsa('#hub-bottomnav .hub-tab-btn');
+        const activeIndex = items.findIndex(b => b.classList.contains('hub-active'));
+        let next = activeIndex;
+        if(e.key === 'ArrowRight') next = (activeIndex + 1) % items.length;
+        if(e.key === 'ArrowLeft') next = (activeIndex - 1 + items.length) % items.length;
+        const nextBtn = items[next];
+        if(nextBtn){ nextBtn.focus(); nextBtn.click(); e.preventDefault(); }
+      });
     }
 
     return shell;
@@ -2222,7 +2242,7 @@ if (!window.toggleFAQ) {
 
     wireInfoTriggers();
     respectReducedMotion();
-    dispatch('hub:initialized', {});
+    dispatch('hub:initialized', { mode: 'appmode-v1' });
   }
 
   function lazyInitialize(){

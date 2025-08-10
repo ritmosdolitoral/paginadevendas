@@ -27,26 +27,27 @@ body { margin: 0; background: radial-gradient(1200px 600px at 0% -10%, color-mix
 @media (min-width: 768px) { .hide-sm { display: inline; } }
 
 /* App Shell */
-.app-shell { display: grid; grid-template-columns: 72px 1fr; grid-template-rows: 56px 1fr auto; min-height: 100dvh; }
+.app-shell { display: grid; grid-template-rows: 56px 1fr auto; min-height: 100dvh; }
 @media (min-width: 1024px) { .app-shell { grid-template-columns: 280px 1fr; grid-template-rows: 64px 1fr auto; } }
 
-.app-topbar { grid-column: 2 / 3; grid-row: 1; display: flex; align-items: center; gap: 12px; padding: 0 16px; backdrop-filter: blur(8px) saturate(140%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); border-bottom: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); }
+/* Topbar / Main / Footer shifted by sidebar on mobile */
+.app-topbar { display: flex; align-items: center; gap: 12px; padding: 0 16px; backdrop-filter: blur(8px) saturate(140%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); border-bottom: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); margin-left: 72px; }
 .app-brand { font-weight: 800; }
 .app-top-actions { margin-left: auto; display: flex; gap: 8px; }
 
-/* Sidebar always visible, vertical */
-.app-sidebar { display: flex; grid-column: 1 / 2; grid-row: 1 / span 3; flex-direction: column; gap: 12px; padding: 12px 8px; border-right: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: linear-gradient(180deg, var(--v2-surface), var(--v2-surface-2)); position: sticky; top: 0; height: 100dvh; }
+/* Sidebar fixed on mobile */
+.app-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 72px; z-index: 10; display: flex; flex-direction: column; gap: 12px; padding: 12px 8px; border-right: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: linear-gradient(180deg, var(--v2-surface), var(--v2-surface-2)); }
+
+.app-main { position: relative; overflow: hidden; background: linear-gradient(180deg, var(--v2-surface), var(--v2-bg)); margin-left: 72px; }
+.app-footer { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); margin-left: 72px; }
+
+/* Desktop: revert to grid layout */
 @media (min-width: 1024px) {
-  .app-sidebar { padding: 16px; }
+  .app-topbar { margin-left: 0; grid-column: 2 / 3; grid-row: 1; }
+  .app-sidebar { position: static; width: auto; grid-column: 1 / 2; grid-row: 1 / span 3; height: auto; padding: 16px; }
+  .app-main { margin-left: 0; grid-column: 2 / 3; grid-row: 2 / 3; }
+  .app-footer { margin-left: 0; grid-column: 2 / 3; grid-row: 3; }
 }
-
-.app-main { grid-column: 2 / 3; grid-row: 2 / 3; position: relative; overflow: hidden; background: linear-gradient(180deg, var(--v2-surface), var(--v2-bg)); }
-
-/* Tabbar mobile */
-.app-tabbar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px 12px calc(6px + env(safe-area-inset-bottom)); border-top: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); backdrop-filter: blur(8px) saturate(140%); }
-@media (min-width: 1024px) { .app-tabbar { display: none; } }
-.app-tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px; border-radius: 12px; color: var(--v2-muted); text-decoration: none; font-size: 12px; }
-.app-tabbar a[aria-current="page"] { color: var(--v2-accent); background: color-mix(in oklab, var(--v2-accent), transparent 90%); font-weight: 700; }
 
 /* Nav list (sidebar) */
 .nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
@@ -102,9 +103,6 @@ dialog { width: 100%; max-width: 600px; border: none; border-radius: 16px; backg
 dialog[open] { transform: translateY(0); opacity: 1; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 @media (max-width: 768px) { dialog { position: fixed; inset: auto 0 0 0; max-width: none; border-radius: 16px 16px 0 0; } }
-
-/* Footer */
-.app-footer { grid-column: 2 / 3; grid-row: 3; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid color-mix(in oklab, var(--v2-text), transparent 90%); background: color-mix(in oklab, var(--v2-surface), transparent 10%); }
 
 /* A11y */
 :focus-visible { outline: 3px solid color-mix(in oklab, var(--v2-accent), white 60%); outline-offset: 2px; }

@@ -1,0 +1,198 @@
+/* App-like UI Module (mobile-first drawer + desktop sidebar)
+   Remove this file to rollback to original topbar/nav.
+*/
+
+:root {
+  --app-drawer-width: 280px;
+  --app-sidebar-width: 280px;
+  --app-fab-size: 56px;
+  --app-overlay-bg: rgba(0, 0, 0, 0.4);
+  --app-surface: #ffffff;
+  --app-surface-elev: #ffffff;
+  --app-border: #e5e7eb; /* gray-200 */
+  --app-text: #111827; /* gray-900 */
+  --app-text-muted: #374151; /* gray-700 */
+  --app-primary: #2563eb; /* blue-600 */
+  --app-primary-contrast: #ffffff;
+  --app-focus: #111827;
+  --app-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+  --app-ease: cubic-bezier(.2,.8,.2,1);
+  --app-dur: 180ms;
+  --app-z-overlay: 950;
+  --app-z-drawer: 960;
+  --app-z-fab: 970;
+}
+
+/* Reset minimal to ensure focus ring visibility */
+.app-nav a { text-decoration: none; }
+.app-nav a:focus-visible,
+.app-fab:focus-visible,
+#app-drawer button:focus-visible {
+  outline: 3px solid var(--app-focus);
+  outline-offset: 3px;
+}
+
+/* Overlay */
+ .app-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--app-overlay-bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--app-dur) var(--app-ease);
+  z-index: var(--app-z-overlay);
+}
+body.drawer-open .app-overlay { opacity: 1; pointer-events: auto; }
+
+/* Drawer */
+#app-drawer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--app-drawer-width);
+  transform: translateX(-100%);
+  opacity: 0;
+  transition:
+    transform var(--app-dur) var(--app-ease),
+    opacity var(--app-dur) var(--app-ease);
+  background: var(--app-surface);
+  border-right: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow);
+  z-index: var(--app-z-drawer);
+  display: flex;
+  flex-direction: column;
+}
+
+#app-drawer[aria-hidden="false"] {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+#app-drawer .app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
+}
+
+#app-drawer .app-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: var(--app-text);
+  min-height: 44px;
+}
+
+#app-drawer .app-nav a:hover,
+#app-drawer .app-nav a[aria-current="page"] {
+  background: #eef2ff; /* indigo-50 */
+  color: #1e40af; /* indigo-800 */
+}
+#app-drawer .app-nav a[aria-current="page"]::before,
+#app-sidebar .app-nav a[aria-current="page"]::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* FAB */
+.app-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: var(--app-fab-size);
+  height: var(--app-fab-size);
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-primary);
+  color: var(--app-primary-contrast);
+  box-shadow: var(--app-shadow);
+  cursor: pointer;
+  z-index: var(--app-z-fab);
+}
+
+.app-fab:hover { filter: brightness(0.95); }
+.app-fab:active { transform: scale(0.98); }
+
+/* Desktop sidebar */
+#app-sidebar {
+  display: none;
+}
+
+/* Hide original header in mobile and desktop when this module is active to avoid duplication */
+@media (max-width: 1023px) {
+  .header { display: none !important; }
+  .whatsapp-float { left: 16px; right: auto; bottom: 16px; z-index: 940; }
+}
+
+@media (min-width: 1024px) {
+  /* Hide top header to keep layout clean in desktop */
+  .header { display: none !important; }
+
+  #app-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: var(--app-sidebar-width);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--app-border);
+    background: var(--app-surface-elev);
+    padding: 16px;
+    z-index: var(--app-z-overlay);
+  }
+
+  #app-sidebar .app-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--app-text);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  #app-sidebar .app-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  #app-sidebar .app-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    color: var(--app-text);
+    min-height: 44px;
+  }
+
+  #app-sidebar .app-nav a:hover,
+  #app-sidebar .app-nav a[aria-current="page"] {
+    background: #eef2ff;
+    color: #1e40af;
+  }
+
+  /* Shift main content to the right to avoid overlap */
+  main { margin-left: var(--app-sidebar-width); }
+  footer { margin-left: var(--app-sidebar-width); }
+
+  /* Hide FAB and overlay on desktop */
+  .app-fab, .app-overlay, #app-drawer { display: none !important; }
+  .whatsapp-float { right: 24px; bottom: 24px; }
+}
+
+/* Motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .app-overlay, #app-drawer { transition: none; }
+}

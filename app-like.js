@@ -9,11 +9,33 @@
   function qs(sel, root=document){ return root.querySelector(sel); }
   function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
 
-  function getHash(){ return window.location.hash || '#inicio'; }
+  function canonicalizeHash(hash){
+    const h = (hash || '').toLowerCase();
+    const map = {
+      '#inicio': '#start',
+      '#problema': '#problem',
+      '#causa': '#cause',
+      '#solucao': '#solution',
+      '#resultados': '#results',
+      '#planos': '#plans'
+    };
+    return map[h] || (h || '#start');
+  }
+
+  function getHash(){
+    return canonicalizeHash(window.location.hash || '#start');
+  }
 
   function ensureAnchors(){
-    // Map current sections to required anchors without replacing existing IDs
-    const map = [
+    // Create auxiliary anchors without replacing existing IDs
+    const pairs = [
+      ['#start', ['#hero']],
+      ['#problem', ['#dor']],
+      ['#cause', ['#causa']],
+      ['#solution', ['#solucao']],
+      ['#results', ['#prova']],
+      ['#plans', ['#planos']],
+      // also support original pt-BR anchors if missing
       ['#inicio', ['#hero']],
       ['#problema', ['#dor']],
       ['#causa', ['#causa']],
@@ -21,7 +43,7 @@
       ['#resultados', ['#prova']],
       ['#planos', ['#planos']]
     ];
-    map.forEach(([target, candidates]) => {
+    pairs.forEach(([target, candidates]) => {
       if(document.getElementById(target.slice(1))) return;
       for(const sel of candidates){
         const el = document.querySelector(sel);
@@ -53,12 +75,12 @@
     drawer.setAttribute('aria-hidden', 'true');
     drawer.innerHTML = `
       <nav class="app-nav" aria-label="Navegação">
-        <a href="#inicio">Início</a>
-        <a href="#problema">O Problema</a>
-        <a href="#causa">Por Que Acontece</a>
-        <a href="#solucao">Nossa Solução</a>
-        <a href="#resultados">Resultados</a>
-        <a href="#planos">Planos</a>
+        <a href="#start">Início</a>
+        <a href="#problem">O Problema</a>
+        <a href="#cause">Por Que Acontece</a>
+        <a href="#solution">Nossa Solução</a>
+        <a href="#results">Resultados</a>
+        <a href="#plans">Planos</a>
       </nav>
     `;
 
@@ -74,12 +96,12 @@
     sidebar.innerHTML = `
       <div class="app-brand"><i class="fas fa-bolt"></i><span>CONEXAO BUZIOS</span></div>
       <nav class="app-nav" aria-label="Navegação">
-        <a href="#inicio">Início</a>
-        <a href="#problema">O Problema</a>
-        <a href="#causa">Por Que Acontece</a>
-        <a href="#solucao">Nossa Solução</a>
-        <a href="#resultados">Resultados</a>
-        <a href="#planos">Planos</a>
+        <a href="#start">Início</a>
+        <a href="#problem">O Problema</a>
+        <a href="#cause">Por Que Acontece</a>
+        <a href="#solution">Nossa Solução</a>
+        <a href="#results">Resultados</a>
+        <a href="#plans">Planos</a>
       </nav>
     `;
 
@@ -191,49 +213,70 @@
 
     document.addEventListener('keydown', onKeydown);
 
-    // Scrollspy via IntersectionObserver
-    const targets = ['#inicio','#problema','#causa','#solucao','#resultados','#planos']
-      .map(id => qs(id)).filter(Boolean);
-    if('IntersectionObserver' in window && targets.length){
+    // Scrollspy via IntersectionObserver observing real sections
+    const sectionEls = ['hero','dor','causa','solucao','prova','planos']
+      .map(id => qs('#' + id)).filter(Boolean);
+    const sectionToCanon = {
+      hero: '#start',
+      dor: '#problem',
+      causa: '#cause',
+      solucao: '#solution',
+      prova: '#results',
+      planos: '#plans'
+    };
+    if('IntersectionObserver' in window && sectionEls.length){
       const io = new IntersectionObserver((entries)=>{
         entries.forEach(entry => {
           if(entry.isIntersecting && entry.intersectionRatio >= 0.5){
-            setActiveByHash('#' + entry.target.id);
-            history.replaceState(null, '', '#' + entry.target.id);
+            const canon = sectionToCanon[entry.target.id];
+            if(canon){
+              setActiveByHash(canon);
+              history.replaceState(null, '', canon);
+            }
           }
         });
       }, { threshold: [0.5] });
-      targets.forEach(el => io.observe(el));
+      sectionEls.forEach(el => io.observe(el));
     }
 
     window.addEventListener('popstate', ()=>{
-      setActiveByHash(getHash());
-      scrollToAnchor(getHash());
+      const h = getHash();
+      setActiveByHash(h);
+      scrollToAnchor(h);
     });
   }
 
   function scrollToAnchor(hash){
-    const el = qs(hash);
+    const el = qs(hash) || qs({
+      '#start': '#hero',
+      '#problem': '#dor',
+      '#cause': '#causa',
+      '#solution': '#solucao',
+      '#results': '#prova',
+      '#plans': '#planos'
+    }[canonicalizeHash(hash)] || '');
     if(!el) return;
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   }
 
   function setActiveByHash(hash){
+    const canon = canonicalizeHash(hash);
     const links = qsa('#app-drawer a, #app-sidebar a');
     links.forEach(a => {
-      const active = a.getAttribute('href') === hash;
+      const active = a.getAttribute('href') === canon;
       if(active){ a.setAttribute('aria-current', 'page'); }
       else { a.removeAttribute('aria-current'); }
     });
   }
 
   function navigateTo(hash){
-    if(getHash() !== hash){
-      history.pushState(null, '', hash);
+    const canon = canonicalizeHash(hash);
+    if(getHash() !== canon){
+      history.pushState(null, '', canon);
     }
-    setActiveByHash(hash);
-    scrollToAnchor(hash);
+    setActiveByHash(canon);
+    scrollToAnchor(canon);
   }
 
   function disableOriginalMobileMenu(){
@@ -251,7 +294,8 @@
     disableOriginalMobileMenu();
 
     // Initial state
-    setActiveByHash(getHash());
+    const h = getHash();
+    setActiveByHash(h);
     // Overlay hidden should reflect drawer state
     const overlay = qs('#app-overlay');
     overlay.hidden = true;

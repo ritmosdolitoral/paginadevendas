@@ -2178,6 +2178,32 @@ if (!window.toggleFAQ) {
     // initial state
     const initial = window.location.hash || '#start';
     setActive(initial);
+    // desktop scrollspy using original sections
+    if('IntersectionObserver' in window){
+      const map = [
+        ['#hero', '#start'],
+        ['#dor', '#problem'],
+        ['#causa', '#cause'],
+        ['#solucao', '#solution'],
+        ['#prova', '#results'],
+        ['#planos', '#plans']
+      ];
+      const pairs = map
+        .map(([src, hash]) => ({ el: document.querySelector(src), hash }))
+        .filter(x => !!x.el);
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(entry => {
+          if(entry.isIntersecting && entry.intersectionRatio >= 0.4){
+            const found = pairs.find(p => p.el === entry.target);
+            if(found){
+              setActive(found.hash);
+              history.replaceState(null,'',found.hash);
+            }
+          }
+        });
+      }, { threshold: [0.4] });
+      pairs.forEach(p => io.observe(p.el));
+    }
   }
 
   if(document.readyState === 'loading'){

@@ -2206,3 +2206,29 @@ body.drawer-open .nav-overlay { opacity: 1; pointer-events: auto; }
 @media (min-width: 640px) and (max-width: 1023px) {
   .nav-drawer .app-nav a { padding: 14px 16px; }
 } 
+
+/* Refined desktop breakpoints for common resolutions */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  :root { --app-sidebar-width: 264px; }
+  main .container { max-width: 1040px; }
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+  :root { --app-sidebar-width: 280px; }
+  main .container { max-width: 1120px; }
+}
+@media (min-width: 1440px) and (max-width: 1599px) {
+  :root { --app-sidebar-width: 300px; }
+  main .container { max-width: 1200px; }
+}
+@media (min-width: 1600px) and (max-width: 1919px) {
+  :root { --app-sidebar-width: 320px; }
+  main .container { max-width: 1280px; }
+}
+@media (min-width: 1920px) and (max-width: 2559px) {
+  :root { --app-sidebar-width: 340px; }
+  main .container { max-width: 1360px; }
+}
+@media (min-width: 2560px) {
+  :root { --app-sidebar-width: 380px; }
+  main .container { max-width: 1440px; }
+} 

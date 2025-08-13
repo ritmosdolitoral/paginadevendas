@@ -2232,3 +2232,13 @@ body.drawer-open .nav-overlay { opacity: 1; pointer-events: auto; }
   :root { --app-sidebar-width: 380px; }
   main .container { max-width: 1440px; }
 } 
+
+/* Reading progress bar (desktop) */
+.reading-progress { position: fixed; left: 0; top: 0; height: 4px; width: 0%; background: var(--primary); z-index: 1200; transition: width 120ms var(--app-ease); }
+@media (max-width: 1023px) { .reading-progress { display: none; } }
+
+/* Back to top (desktop) */
+.back-to-top { position: fixed; right: 24px; bottom: 24px; width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--gray-200); background: #fff; color: var(--gray-800); box-shadow: var(--shadow-md); display: none; align-items: center; justify-content: center; z-index: 1200; cursor: pointer; }
+.back-to-top:hover { filter: brightness(.98); }
+.back-to-top:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+@media (min-width: 1024px) { .back-to-top { display: inline-flex; } } 

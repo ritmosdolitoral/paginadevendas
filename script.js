@@ -2212,3 +2212,29 @@ if (!window.toggleFAQ) {
     initAppLikeNav();
   }
 })();
+
+// Reading progress + Back-to-top (desktop)
+(function(){
+  function updateProgress(){
+    const bar = document.getElementById('reading-progress');
+    if(!bar) return;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+    bar.style.width = progress + '%';
+  }
+  function bindBackToTop(){
+    const btn = document.getElementById('back-to-top');
+    if(!btn) return;
+    const toggle = () => { btn.style.opacity = (window.scrollY > 600 ? '1' : '0'); btn.style.pointerEvents = (window.scrollY > 600 ? 'auto' : 'none'); };
+    toggle();
+    window.addEventListener('scroll', throttle(toggle, 100));
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
+  function init(){ updateProgress(); bindBackToTop(); window.addEventListener('scroll', throttle(updateProgress, 50)); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
+})();

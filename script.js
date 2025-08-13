@@ -2110,10 +2110,26 @@ if (!window.toggleFAQ) {
     const overlay = document.getElementById('nav-overlay');
     const drawer = document.getElementById('nav-drawer');
     const fab = document.getElementById('nav-fab');
-    if(fab) fab.addEventListener('click', toggleDrawer);
+    if(fab) {
+      fab.addEventListener('click', toggleDrawer);
+      // keyboard activation of FAB
+      fab.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDrawer(); }
+      });
+    }
     if(overlay) overlay.addEventListener('click', closeDrawer);
 
     if(drawer){
+      // focus trap when open
+      drawer.addEventListener('keydown', (e)=>{
+        if(e.key !== 'Tab') return;
+        const focusables = drawer.querySelectorAll('a[href], button, [tabindex]:not([tabindex="-1"])');
+        if(!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length-1];
+        if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+        else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+      });
       drawer.addEventListener('click', (e)=>{
         const a = e.target.closest('a[href^="#"]');
         if(!a) return;

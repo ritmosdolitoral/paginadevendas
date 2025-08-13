@@ -130,7 +130,11 @@ body.drawer-open .app-overlay { opacity: 1; pointer-events: auto; }
 
 /* Hide original header in mobile and desktop when this module is active to avoid duplication */
 @media (max-width: 1023px) {
-  .header { display: none !important; }
+  /* Narrow drawer visual content padding to fit 72–88px touch comfort while keeping panel width */
+  #app-drawer .app-nav a { min-height: 48px; }
+  /* Hide any sticky headers to avoid overlap on real mobile */
+  .header, .nav, .nav-container { display: none !important; }
+  /* Keep WhatsApp button visible with proper stacking */
   .whatsapp-float { left: 16px; right: auto; bottom: 16px; z-index: 940; }
 }
 
@@ -196,3 +200,21 @@ body.drawer-open .app-overlay { opacity: 1; pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) {
   .app-overlay, #app-drawer { transition: none; }
 }
+
+/* Respect light/dark text contrast */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-surface: #0f172a;
+    --app-surface-elev: #0b1220;
+    --app-border: #1f2937;
+    --app-text: #e5e7eb;
+    --app-text-muted: #94a3b8;
+    --app-primary: #60a5fa;
+    --app-primary-contrast: #0b1220;
+    --app-focus: #fff;
+  }
+}
+
+/* Suppress auxiliary UI helpers to keep interface clean */
+#hub-floating-cta, #hub-scrollspy, #hub-segment-control { display: none !important; }
+.app-fab { z-index: var(--app-z-fab); }

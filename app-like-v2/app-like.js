@@ -9,34 +9,34 @@
   function qs(sel, root=document){ return root.querySelector(sel); }
   function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
 
-  function getHash(){ return window.location.hash || '#inicio'; }
+  function getHash(){ return window.location.hash || '#start'; }
 
-  function ensureAnchors(){
-    // Map current sections to required anchors without replacing existing IDs
-    const map = [
-      ['#inicio', ['#hero']],
-      ['#problema', ['#dor']],
-      ['#causa', ['#causa']],
-      ['#solucao', ['#solucao']],
-      ['#resultados', ['#prova']],
-      ['#planos', ['#planos']]
-    ];
-    map.forEach(([target, candidates]) => {
-      if(document.getElementById(target.slice(1))) return;
-      for(const sel of candidates){
-        const el = document.querySelector(sel);
-        if(el){
-          const a = document.createElement('span');
-          a.id = target.slice(1);
-          a.setAttribute('aria-hidden', 'true');
-          a.style.position = 'relative';
-          a.style.top = '-1px';
-          el.prepend(a);
-          break;
+    function ensureAnchors(){
+      // Map current sections to required anchors without replacing existing IDs
+      const map = [
+        ['#start', ['#hero']],
+        ['#problem', ['#dor']],
+        ['#cause', ['#causa']],
+        ['#solution', ['#solucao']],
+        ['#results', ['#prova']],
+        ['#plans', ['#planos']]
+      ];
+      map.forEach(([target, candidates]) => {
+        if(document.getElementById(target.slice(1))) return;
+        for(const sel of candidates){
+          const el = document.querySelector(sel);
+          if(el){
+            const a = document.createElement('span');
+            a.id = target.slice(1);
+            a.setAttribute('aria-hidden', 'true');
+            a.style.position = 'relative';
+            a.style.top = '-1px';
+            el.prepend(a);
+            break;
+          }
         }
-      }
-    });
-  }
+      });
+    }
 
   function buildShell(){
     if(qs('#app-shell-mounted')) return; // idempotent
@@ -53,12 +53,12 @@
     drawer.setAttribute('aria-hidden', 'true');
     drawer.innerHTML = `
       <nav class="app-nav" aria-label="Navegação">
-        <a href="#inicio">Início</a>
-        <a href="#problema">O Problema</a>
-        <a href="#causa">Por Que Acontece</a>
-        <a href="#solucao">Nossa Solução</a>
-        <a href="#resultados">Resultados</a>
-        <a href="#planos">Planos</a>
+        <a href="#start">Início</a>
+        <a href="#problem">O Problema</a>
+        <a href="#cause">Por Que Acontece</a>
+        <a href="#solution">Nossa Solução</a>
+        <a href="#results">Resultados</a>
+        <a href="#plans">Planos</a>
       </nav>
     `;
 
@@ -74,12 +74,12 @@
     sidebar.innerHTML = `
       <div class="app-brand"><i class="fas fa-bolt"></i><span>CONEXAO BUZIOS</span></div>
       <nav class="app-nav" aria-label="Navegação">
-        <a href="#inicio">Início</a>
-        <a href="#problema">O Problema</a>
-        <a href="#causa">Por Que Acontece</a>
-        <a href="#solucao">Nossa Solução</a>
-        <a href="#resultados">Resultados</a>
-        <a href="#planos">Planos</a>
+        <a href="#start">Início</a>
+        <a href="#problem">O Problema</a>
+        <a href="#cause">Por Que Acontece</a>
+        <a href="#solution">Nossa Solução</a>
+        <a href="#results">Resultados</a>
+        <a href="#plans">Planos</a>
       </nav>
     `;
 
@@ -191,19 +191,28 @@
 
     document.addEventListener('keydown', onKeydown);
 
-    // Scrollspy via IntersectionObserver
-    const targets = ['#inicio','#problema','#causa','#solucao','#resultados','#planos']
-      .map(id => qs(id)).filter(Boolean);
-    if('IntersectionObserver' in window && targets.length){
+    // Scrollspy via IntersectionObserver over original sections, mapping to canonical hashes
+    const sectionMap = [
+      { el: qs('#hero'), hash: '#start' },
+      { el: qs('#dor'), hash: '#problem' },
+      { el: qs('#causa'), hash: '#cause' },
+      { el: qs('#solucao'), hash: '#solution' },
+      { el: qs('#prova'), hash: '#results' },
+      { el: qs('#planos'), hash: '#plans' }
+    ].filter(x => !!x.el);
+    if('IntersectionObserver' in window && sectionMap.length){
       const io = new IntersectionObserver((entries)=>{
         entries.forEach(entry => {
           if(entry.isIntersecting && entry.intersectionRatio >= 0.5){
-            setActiveByHash('#' + entry.target.id);
-            history.replaceState(null, '', '#' + entry.target.id);
+            const mapped = sectionMap.find(x => x.el === entry.target);
+            if(mapped){
+              setActiveByHash(mapped.hash);
+              history.replaceState(null, '', mapped.hash);
+            }
           }
         });
       }, { threshold: [0.5] });
-      targets.forEach(el => io.observe(el));
+      sectionMap.forEach(x => io.observe(x.el));
     }
 
     window.addEventListener('popstate', ()=>{
@@ -226,6 +235,10 @@
       if(active){ a.setAttribute('aria-current', 'page'); }
       else { a.removeAttribute('aria-current'); }
     });
+    // sync document hash without scroll jump
+    if(window.location.hash !== hash){
+      history.replaceState(null, '', hash);
+    }
   }
 
   function navigateTo(hash){

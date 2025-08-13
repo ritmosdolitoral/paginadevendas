@@ -2035,3 +2035,138 @@ if (!window.toggleFAQ) {
     initUIHub();
   }
 })();
+
+// === App-like Navigation (mobile drawer + desktop sidebar) ===
+(function(){
+  function ensureAnchors(){
+    const map = [
+      ['start', '#hero'],
+      ['problem', '#dor'],
+      ['cause', '#causa'],
+      ['solution', '#solucao'],
+      ['results', '#prova'],
+      ['plans', '#planos']
+    ];
+    map.forEach(([id, sel]) => {
+      if(document.getElementById(id)) return;
+      const el = document.querySelector(sel);
+      if(!el) return;
+      const a = document.createElement('span');
+      a.id = id; a.setAttribute('aria-hidden','true'); a.style.position='relative'; a.style.top='-1px';
+      el.prepend(a);
+    });
+  }
+
+  function setActive(hash){
+    const links = document.querySelectorAll('#nav-drawer a, #nav-sidebar a');
+    links.forEach(a => {
+      if(a.getAttribute('href') === hash) a.setAttribute('aria-current','page');
+      else a.removeAttribute('aria-current');
+    });
+  }
+
+  function scrollToHash(hash){
+    const el = document.querySelector(hash);
+    if(!el) return;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  function openDrawer(){
+    const drawer = document.getElementById('nav-drawer');
+    const overlay = document.getElementById('nav-overlay');
+    const fab = document.getElementById('nav-fab');
+    if(!drawer || !overlay || !fab) return;
+    document.body.classList.add('drawer-open');
+    drawer.setAttribute('aria-hidden','false');
+    overlay.setAttribute('aria-hidden','false');
+    fab.setAttribute('aria-expanded','true');
+    setTimeout(() => {
+      const first = drawer.querySelector('a');
+      if(first) first.focus();
+    }, 80);
+  }
+
+  function closeDrawer(){
+    const drawer = document.getElementById('nav-drawer');
+    const overlay = document.getElementById('nav-overlay');
+    const fab = document.getElementById('nav-fab');
+    if(!drawer || !overlay || !fab) return;
+    drawer.setAttribute('aria-hidden','true');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.classList.remove('drawer-open');
+    fab.setAttribute('aria-expanded','false');
+    setTimeout(() => fab.focus(), 180);
+  }
+
+  function toggleDrawer(){
+    const drawer = document.getElementById('nav-drawer');
+    if(!drawer) return;
+    const isOpen = drawer.getAttribute('aria-hidden') === 'false';
+    isOpen ? closeDrawer() : openDrawer();
+  }
+
+  function bindNav(){
+    const overlay = document.getElementById('nav-overlay');
+    const drawer = document.getElementById('nav-drawer');
+    const fab = document.getElementById('nav-fab');
+    if(fab) fab.addEventListener('click', toggleDrawer);
+    if(overlay) overlay.addEventListener('click', closeDrawer);
+
+    if(drawer){
+      drawer.addEventListener('click', (e)=>{
+        const a = e.target.closest('a[href^="#"]');
+        if(!a) return;
+        e.preventDefault();
+        const hash = a.getAttribute('href');
+        if(window.location.hash !== hash) history.pushState(null,'',hash);
+        setActive(hash);
+        scrollToHash(hash);
+        closeDrawer();
+      });
+    }
+
+    const sidebar = document.getElementById('nav-sidebar');
+    if(sidebar){
+      sidebar.addEventListener('click', (e)=>{
+        const a = e.target.closest('a[href^="#"]');
+        if(!a) return;
+        e.preventDefault();
+        const hash = a.getAttribute('href');
+        if(window.location.hash !== hash) history.pushState(null,'',hash);
+        setActive(hash);
+        scrollToHash(hash);
+      });
+    }
+
+    document.addEventListener('keydown', (e)=>{
+      const drawer = document.getElementById('nav-drawer');
+      if(!drawer) return;
+      const open = drawer.getAttribute('aria-hidden') === 'false';
+      if(e.key === 'Escape' && open){
+        e.preventDefault();
+        closeDrawer();
+      }
+    });
+
+    window.addEventListener('popstate', ()=>{
+      const hash = window.location.hash || '#start';
+      setActive(hash);
+      scrollToHash(hash);
+    });
+  }
+
+  function initAppLikeNav(){
+    ensureAnchors();
+    bindNav();
+    // initial state
+    const initial = window.location.hash || '#start';
+    setActive(initial);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initAppLikeNav, { once: true });
+  } else {
+    initAppLikeNav();
+  }
+})();

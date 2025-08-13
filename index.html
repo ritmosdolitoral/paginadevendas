@@ -13,7 +13,7 @@
     <!-- CSS otimizado -->
     <link rel="stylesheet" href="styles.css">
     <!-- App-like module CSS (remova para rollback) -->
-    <link rel="stylesheet" href="app-like-v2/app-like.css">
+
     
     <!-- Preload crítico -->
     <link rel="preload" href="styles.css" as="style">
@@ -603,9 +603,34 @@
         <i class="fab fa-whatsapp"></i>
     </div>
 
+    <!-- App-like navigation (mobile drawer + desktop sidebar) -->
+    <div id="nav-overlay" class="nav-overlay" aria-hidden="true"></div>
+    <aside id="nav-drawer" class="nav-drawer" role="dialog" aria-modal="true" aria-hidden="true">
+        <nav class="app-nav" aria-label="Navegação">
+            <a href="#start">Início</a>
+            <a href="#problem">O Problema</a>
+            <a href="#cause">Por Que Acontece</a>
+            <a href="#solution">Nossa Solução</a>
+            <a href="#results">Resultados</a>
+            <a href="#plans">Planos</a>
+        </nav>
+    </aside>
+    <button id="nav-fab" class="nav-fab" aria-label="Abrir menu" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i></button>
+    <aside id="nav-sidebar" class="nav-sidebar" aria-label="Navegação lateral">
+        <div class="app-brand"><i class="fas fa-bolt" aria-hidden="true"></i><span>CONEXAO BUZIOS</span></div>
+        <nav class="app-nav" aria-label="Navegação">
+            <a href="#start">Início</a>
+            <a href="#problem">O Problema</a>
+            <a href="#cause">Por Que Acontece</a>
+            <a href="#solution">Nossa Solução</a>
+            <a href="#results">Resultados</a>
+            <a href="#plans">Planos</a>
+        </nav>
+    </aside>
+
     <!-- Script principal -->
     <script src="script.js"></script>
     <!-- App-like module JS (remova para rollback) -->
-    <script src="app-like-v2/app-like.js"></script>
+    
 </body>
 </html> 
